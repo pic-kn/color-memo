@@ -1047,15 +1047,21 @@
                 const lum = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
                 const { s } = rgbToHsl(rgb[0], rgb[1], rgb[2]);
                 return { hex, lum, s };
-            }).sort((a, b) => a.lum - b.lum);
+            });
 
-            const finalColors = [
-                mapped[0],
-                mapped[Math.floor(mapped.length * 0.3)],
-                mapped[Math.floor(mapped.length * 0.5)],
-                mapped[Math.floor(mapped.length * 0.7)],
-                mapped[mapped.length - 1]
-            ];
+            // ColorThief 1番目 = 最も割合の高いメインカラー
+            const main = mapped[0];
+
+            // 残りを明度順にソート → 暗い2色・明るい2色を選ぶ
+            const rest = mapped.slice(1).sort((a, b) => a.lum - b.lum);
+            const dark1  = rest[0];
+            const dark2  = rest[Math.floor(rest.length * 0.25)];
+            const light1 = rest[Math.floor(rest.length * 0.75)];
+            const light2 = rest[rest.length - 1];
+
+            // 5色を明度順にソートして表示
+            const finalColors = [main, dark1, dark2, light1, light2]
+                .sort((a, b) => a.lum - b.lum);
 
             const textColor = finalColors.reduce((prev, curr) => curr.s < prev.s ? curr : prev).hex;
             currentTextColor = textColor;
