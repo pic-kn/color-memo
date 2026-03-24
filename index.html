@@ -470,17 +470,9 @@
             color: var(--text-light);
             text-decoration: underline;
         }
-        #thumb-lightbox {
-            position: fixed; inset: 0; z-index: 9999;
-            background: rgba(0,0,0,0.82);
-            display: flex; align-items: center; justify-content: center;
-            padding: 24px;
-            cursor: pointer;
-        }
-        #thumb-lightbox img {
-            max-width: 100%; max-height: 90vh;
-            border-radius: 2px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        .saved-thumb-wrapper.active .saved-thumb {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
         }
         @media (max-width: 768px) {
             .saved-thumb {
@@ -1178,7 +1170,7 @@
                                 if (mobileTransform) cw.style.transform = mobileTransform;
                                 const dataURL = canvas.toDataURL('image/png');
                                 if (savedImages.length < 4) {
-                                    savedImages.push(dataURL);
+                                    savedImages.push({ rendered: dataURL, original: mainPhoto.src });
                                     updateTray();
                                 }
                                 resolve();
@@ -1283,14 +1275,24 @@
             countEl.textContent = savedImages.length;
             thumbsEl.innerHTML  = '';
 
-            savedImages.forEach((dataURL, i) => {
+            savedImages.forEach((item, i) => {
                 const wrapper   = document.createElement('div');
                 wrapper.className = 'saved-thumb-wrapper';
                 const img       = document.createElement('img');
                 img.className   = 'saved-thumb';
-                img.src         = dataURL;
+                img.src         = item.rendered;
                 img.style.cursor = 'pointer';
-                img.addEventListener('click', () => openLightbox(dataURL));
+                img.addEventListener('click', () => {
+                    document.querySelectorAll('.saved-thumb-wrapper').forEach(w => w.classList.remove('active'));
+                    wrapper.classList.add('active');
+                    mainPhoto.src = item.original;
+                    mainPhoto.onload = () => {
+                        document.getElementById('placeholder').style.display = 'none';
+                        mainPhoto.style.display = 'block';
+                        mainPhoto.style.visibility = 'visible';
+                        generatePalette();
+                    };
+                });
                 const removeBtn = document.createElement('button');
                 removeBtn.className = 'saved-remove';
                 removeBtn.textContent = '×';
@@ -1313,33 +1315,23 @@
             shareBtn.style.display = savedImages.length > 0 ? 'inline-block' : 'none';
         }
 
-        function openLightbox(dataURL) {
-            const lb = document.createElement('div');
-            lb.id = 'thumb-lightbox';
-            const img = document.createElement('img');
-            img.src = dataURL;
-            lb.appendChild(img);
-            lb.addEventListener('click', () => document.body.removeChild(lb));
-            document.body.appendChild(lb);
-        }
-
         document.getElementById('clear-btn').addEventListener('click', () => {
             savedImages.length = 0;
             updateTray();
         });
 
         document.getElementById('share-all-btn').addEventListener('click', async () => {
-            const files = savedImages.map((dataURL, i) =>
-                new File([dataURLToBlob(dataURL)], `color_memo_${i + 1}.png`, { type: 'image/png' })
+            const files = savedImages.map((item, i) =>
+                new File([dataURLToBlob(item.rendered)], `color_memo_${i + 1}.png`, { type: 'image/png' })
             );
             if (navigator.canShare && navigator.canShare({ files })) {
                 try { await navigator.share({ files, text: '#みんなのカラーパレット @pic_kn__' }); }
                 catch (e) { /* キャンセル等 */ }
             } else {
-                files.forEach((_, i) => {
+                savedImages.forEach((item, i) => {
                     const link = document.createElement('a');
                     link.download = `color_memo_${i + 1}.png`;
-                    link.href = savedImages[i];
+                    link.href = item.rendered;
                     link.click();
                 });
             }
@@ -1367,7 +1359,7 @@
                     const dataURL = canvas.toDataURL('image/png');
 
                     if (savedImages.length < 4) {
-                        savedImages.push(dataURL);
+                        savedImages.push({ rendered: dataURL, original: mainPhoto.src });
                         updateTray();
                     }
 
