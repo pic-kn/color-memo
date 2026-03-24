@@ -853,7 +853,7 @@
         </div></div><!-- /canvas-scale-wrapper -->
 
         <div class="ui-bar">
-            <input type="file" id="image-input" accept="image/*" style="display:none">
+            <input type="file" id="image-input" accept="image/*" multiple style="display:none">
             <button id="save-btn" class="ui-btn">画像を保存する</button>
         </div>
 
@@ -866,6 +866,7 @@
             <p class="tray-count"><span id="saved-count">0</span> / 4 枚保存済み</p>
             <div id="saved-thumbnails"></div>
             <div class="tray-actions">
+                <button id="share-all-btn" class="cta-btn" style="display:none">まとめて保存</button>
                 <a id="tweet-btn" href="#" target="_blank" rel="noopener noreferrer" class="cta-btn">X で投稿する</a>
                 <button id="clear-btn" class="clear-btn">クリア</button>
             </div>
@@ -1097,8 +1098,14 @@
         /* ── ファイル選択（プレビュー画面クリック） ── */
         document.querySelector('.photo-container').addEventListener('click', () => imageInput.click());
         imageInput.addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (file) loadFile(file);
+            const files = e.target.files;
+            if (!files.length) return;
+            if (files.length > 1) {
+                processFiles(files);
+            } else {
+                loadFile(files[0]);
+            }
+            imageInput.value = '';
         });
 
         /* ── ドラッグ＆ドロップ ── */
@@ -1115,6 +1122,61 @@
             const file = e.dataTransfer.files[0];
             if (file && file.type.startsWith('image/')) loadFile(file);
         });
+
+        /* ── 複数ファイル一括処理 ── */
+        function dataURLToBlob(dataURL) {
+            const [header, data] = dataURL.split(',');
+            const mime = header.match(/:(.*?);/)[1];
+            const bin  = atob(data);
+            const arr  = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+            return new Blob([arr], { type: mime });
+        }
+
+        async function processFiles(files) {
+            const remaining = 4 - savedImages.length;
+            const targets   = Array.from(files).slice(0, remaining);
+            const ov = document.createElement('div');
+            ov.id = 'batch-overlay';
+            ov.style.cssText = 'position:fixed;inset:0;background:rgba(252,252,252,0.93);z-index:9998;display:flex;align-items:center;justify-content:center;font-size:11px;letter-spacing:0.25em;color:#4a6370;';
+            document.body.appendChild(ov);
+            for (let i = 0; i < targets.length; i++) {
+                ov.textContent = `処理中... ${i + 1} / ${targets.length}`;
+                await processOneFile(targets[i]);
+            }
+            document.body.removeChild(ov);
+        }
+
+        function processOneFile(file) {
+            return new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    mainPhoto.src = ev.target.result;
+                    mainPhoto.onload = () => {
+                        document.getElementById('placeholder').style.display = 'none';
+                        mainPhoto.style.display = 'block';
+                        mainPhoto.style.visibility = 'visible';
+                        generatePalette();
+                        setTimeout(() => {
+                            const cw = document.getElementById('canvas-wrapper');
+                            cw.style.transform = '';
+                            html2canvas(cw, { scale: 2, useCORS: true }).then(canvas => {
+                                const mobileTransform = document.getElementById('canvas-scale-wrapper').style.overflow === 'hidden'
+                                    ? `scale(${(window.innerWidth - 48) / 1200})` : '';
+                                if (mobileTransform) cw.style.transform = mobileTransform;
+                                const dataURL = canvas.toDataURL('image/png');
+                                if (savedImages.length < 4) {
+                                    savedImages.push(dataURL);
+                                    updateTray();
+                                }
+                                resolve();
+                            });
+                        }, 400);
+                    };
+                };
+                reader.readAsDataURL(file);
+            });
+        }
 
         /* ── ファイル読み込み ── */
         function loadFile(file) {
@@ -1231,11 +1293,31 @@
             const tweetText = '#みんなのカラーパレット @pic_kn__\nhttps://pic-kn.github.io/color-memo/';
             document.getElementById('tweet-btn').href =
                 `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+
+            const shareBtn = document.getElementById('share-all-btn');
+            shareBtn.style.display = savedImages.length > 0 ? 'inline-block' : 'none';
         }
 
         document.getElementById('clear-btn').addEventListener('click', () => {
             savedImages.length = 0;
             updateTray();
+        });
+
+        document.getElementById('share-all-btn').addEventListener('click', async () => {
+            const files = savedImages.map((dataURL, i) =>
+                new File([dataURLToBlob(dataURL)], `color_memo_${i + 1}.png`, { type: 'image/png' })
+            );
+            if (navigator.canShare && navigator.canShare({ files })) {
+                try { await navigator.share({ files, text: '#みんなのカラーパレット @pic_kn__' }); }
+                catch (e) { /* キャンセル等 */ }
+            } else {
+                files.forEach((_, i) => {
+                    const link = document.createElement('a');
+                    link.download = `color_memo_${i + 1}.png`;
+                    link.href = savedImages[i];
+                    link.click();
+                });
+            }
         });
 
         /* ── 保存 ── */
