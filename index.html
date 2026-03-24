@@ -403,6 +403,8 @@
             letter-spacing: 0;
         }
 
+        .mobile-upload-hint { display: none; }
+
         /* ─────────────────────────
            CAROUSEL
         ───────────────────────── */
@@ -673,6 +675,16 @@
             /* Mini steps */
             .mini-steps { display: none; }
 
+            /* モバイル用アップロード案内 */
+            .mobile-upload-hint {
+                display: block;
+                text-align: center;
+                font-size: 11px;
+                letter-spacing: 0.22em;
+                color: var(--text-light);
+                padding: 20px 0 16px;
+            }
+
             /* How to use */
             .how-to-section { padding: 60px 0 50px; }
             .steps { grid-template-columns: 1fr; gap: 32px; }
@@ -742,6 +754,7 @@
         <span class="mini-arrow">→</span>
         <span class="mini-step">03 &nbsp;保存してシェア</span>
     </div>
+    <p class="mobile-upload-hint">タップして画像をアップロード</p>
 
     <!-- ── TOOL ── -->
     <div id="scale-wrapper">
