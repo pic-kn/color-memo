@@ -415,6 +415,69 @@
         .mobile-upload-hint { display: none; }
 
         /* ─────────────────────────
+           SAVED TRAY
+        ───────────────────────── */
+        #saved-tray {
+            display: none;
+            padding: 48px 0 60px;
+            border-top: 1px solid rgba(80,80,80,0.06);
+        }
+        .tray-count {
+            text-align: center;
+            font-size: 11px;
+            letter-spacing: 0.3em;
+            color: var(--text-light);
+            margin-bottom: 24px;
+        }
+        #saved-thumbnails {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+        }
+        .saved-thumb-wrapper { position: relative; }
+        .saved-thumb {
+            width: 160px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 2px;
+            display: block;
+        }
+        .saved-remove {
+            position: absolute;
+            top: -6px; right: -6px;
+            width: 18px; height: 18px;
+            background: var(--ink);
+            color: #fff;
+            border: none; border-radius: 50%;
+            cursor: pointer;
+            font-size: 11px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0; line-height: 1;
+        }
+        .tray-actions {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .clear-btn {
+            background: transparent; border: none;
+            cursor: pointer;
+            font-size: 11px; letter-spacing: 0.2em;
+            color: var(--text-light);
+            text-decoration: underline;
+        }
+        @media (max-width: 768px) {
+            .saved-thumb {
+                width: calc((100vw - 80px) / 2);
+                height: calc((100vw - 80px) / 2 * 9 / 16);
+            }
+        }
+
+        /* ─────────────────────────
            CAROUSEL
         ───────────────────────── */
         .carousel-section {
@@ -797,6 +860,18 @@
     </div><!-- /app-container -->
     </div><!-- /scale-wrapper -->
 
+    <!-- ── SAVED TRAY ── -->
+    <div id="saved-tray">
+        <div class="section-inner">
+            <p class="tray-count"><span id="saved-count">0</span> / 4 枚保存済み</p>
+            <div id="saved-thumbnails"></div>
+            <div class="tray-actions">
+                <a id="tweet-btn" href="#" target="_blank" rel="noopener noreferrer" class="cta-btn">X で投稿する</a>
+                <button id="clear-btn" class="clear-btn">クリア</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ── HOW TO USE ── -->
     <section class="how-to-section">
         <div class="section-inner">
@@ -1123,6 +1198,46 @@
             });
         }
 
+        /* ── 保存済みトレイ ── */
+        const savedImages = [];
+
+        function updateTray() {
+            const tray     = document.getElementById('saved-tray');
+            const countEl  = document.getElementById('saved-count');
+            const thumbsEl = document.getElementById('saved-thumbnails');
+
+            countEl.textContent = savedImages.length;
+            thumbsEl.innerHTML  = '';
+
+            savedImages.forEach((dataURL, i) => {
+                const wrapper   = document.createElement('div');
+                wrapper.className = 'saved-thumb-wrapper';
+                const img       = document.createElement('img');
+                img.className   = 'saved-thumb';
+                img.src         = dataURL;
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'saved-remove';
+                removeBtn.textContent = '×';
+                removeBtn.addEventListener('click', () => {
+                    savedImages.splice(i, 1);
+                    updateTray();
+                });
+                wrapper.append(img, removeBtn);
+                thumbsEl.appendChild(wrapper);
+            });
+
+            tray.style.display = savedImages.length > 0 ? 'block' : 'none';
+
+            const tweetText = '#みんなのカラーパレット @pic_kn__\nhttps://pic-kn.github.io/color-memo/';
+            document.getElementById('tweet-btn').href =
+                `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+        }
+
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            savedImages.length = 0;
+            updateTray();
+        });
+
         /* ── 保存 ── */
         document.getElementById('save-btn').addEventListener('click', () => {
             const cw           = document.getElementById('canvas-wrapper');
@@ -1143,6 +1258,11 @@
                     if (ov) document.body.removeChild(ov);
 
                     const dataURL = canvas.toDataURL('image/png');
+
+                    if (savedImages.length < 4) {
+                        savedImages.push(dataURL);
+                        updateTray();
+                    }
 
                     if (isIOS) {
                         // iOS Safari: <a download> 非対応のためモーダル表示
