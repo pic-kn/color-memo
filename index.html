@@ -5,10 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>color memo</title>
-    <!-- Google Fonts: M PLUS Rounded 1c -->
+    <!-- Adobe Fonts (Typekit) kit: ubu6orw -->
+    <script>
+      (function(d) {
+        var config = {
+          kitId: 'ubu6orw',
+          scriptTimeout: 3000,
+          async: true
+        },
+        h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
+      })(document);
+    </script>
+    <!-- Google Fonts: canvas-wrapper専用 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -153,7 +164,7 @@
 
         body {
             background-color: var(--bg);
-            font-family: 'M PLUS Rounded 1c', sans-serif;
+            font-family: fot-tsukuardgothic-std, sans-serif;
             font-style: normal;
             font-weight: 400;
             color: var(--text-dark);
@@ -236,7 +247,7 @@
         }
 
         .ui-btn {
-            font-family: 'M PLUS Rounded 1c', sans-serif;
+            font-family: fot-tsukuardgothic-std, sans-serif;
             font-weight: 400;
             font-size: 10px;
             letter-spacing: 0.22em;
@@ -270,6 +281,7 @@
         }
 
 #canvas-wrapper {
+            font-family: 'Zen Kaku Gothic New', sans-serif;
             width: 1200px;
             height: 675px;
             background-color: var(--bg-white);
@@ -328,7 +340,7 @@
             position: absolute;
             top: 50px;
             left: 50px;
-            font-family: 'M PLUS Rounded 1c', sans-serif;
+            font-family: fot-tsukuardgothic-std, sans-serif;
             font-size: 15px;
             color: rgba(80, 80, 80, 0.6);
             letter-spacing: -0.05em;
@@ -364,7 +376,7 @@
         }
 
         .color-code {
-            font-family: 'M PLUS Rounded 1c', sans-serif;
+            font-family: fot-tsukuardgothic-std, sans-serif;
             font-style: normal;
             font-weight: 400;
             font-size: 16px;
@@ -570,7 +582,7 @@
         }
 
         .cta-btn {
-            font-family: 'M PLUS Rounded 1c', sans-serif;
+            font-family: fot-tsukuardgothic-std, sans-serif;
             font-size: 11px;
             letter-spacing: 0.22em;
             color: var(--ui-color);
