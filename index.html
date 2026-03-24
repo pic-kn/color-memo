@@ -673,7 +673,8 @@
 
             /* Scale wrapper */
             #scale-wrapper { padding: 0 0 40px; }
-            .ui-bar { justify-content: center; }
+            .ui-bar { justify-content: center; flex-direction: column; align-items: center; }
+            #save-btn { width: 100%; }
 
             /* Carousel */
             .carousel-section { padding: 0 0 60px; }
@@ -954,12 +955,31 @@
 
         /* ── レスポンシブスケーリング ── */
         function scaleApp() {
-            const margin = 40;
-            const scale = Math.min(0.82, (window.innerWidth - margin) / 1200);
             const appContainer = document.getElementById('app-container');
-            const scaleWrapper = document.getElementById('scale-wrapper');
+            const scaleWrapper  = document.getElementById('scale-wrapper');
+            const canvasWrapper = document.getElementById('canvas-wrapper');
+            const uiBar         = document.querySelector('.ui-bar');
+
+            if (window.innerWidth <= 768) {
+                const mobileWidth  = window.innerWidth - 32;
+                const zoomFactor   = mobileWidth / 1200;
+                appContainer.style.transform = 'none';
+                appContainer.style.width     = mobileWidth + 'px';
+                canvasWrapper.style.zoom     = zoomFactor;
+                uiBar.style.width            = mobileWidth + 'px';
+                scaleWrapper.style.height    = 'auto';
+                return;
+            }
+
+            // PC
+            appContainer.style.transform = '';
+            appContainer.style.width     = '';
+            canvasWrapper.style.zoom     = '';
+            uiBar.style.width            = '';
+            const margin = 40;
+            const scale  = Math.min(0.82, (window.innerWidth - margin) / 1200);
             appContainer.style.transform = `scale(${scale})`;
-            scaleWrapper.style.height = (appContainer.offsetHeight * scale + 40) + 'px';
+            scaleWrapper.style.height    = (appContainer.offsetHeight * scale + 40) + 'px';
         }
         window.addEventListener('resize', scaleApp);
         window.addEventListener('load', scaleApp);
@@ -1054,12 +1074,34 @@
 
         /* ── 保存 ── */
         document.getElementById('save-btn').addEventListener('click', () => {
-            html2canvas(canvasWrapper, { scale: 2 }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'color_memo.png';
-                link.href = canvas.toDataURL();
-                link.click();
-            });
+            const cw          = document.getElementById('canvas-wrapper');
+            const currentZoom = cw.style.zoom;
+
+            const doSave = () => {
+                html2canvas(cw, { scale: 2 }).then(canvas => {
+                    if (currentZoom) {
+                        cw.style.zoom = currentZoom;
+                        document.body.removeChild(document.getElementById('save-overlay'));
+                    }
+                    const link = document.createElement('a');
+                    link.download = 'color_memo.png';
+                    link.href = canvas.toDataURL();
+                    link.click();
+                });
+            };
+
+            if (currentZoom) {
+                // モバイル：zoom を一時解除してフルサイズでキャプチャ
+                const overlay = document.createElement('div');
+                overlay.id = 'save-overlay';
+                overlay.style.cssText = 'position:fixed;inset:0;background:rgba(252,252,252,0.93);z-index:9999;display:flex;align-items:center;justify-content:center;font-size:11px;letter-spacing:0.25em;color:#4a6370;';
+                overlay.textContent = '保存中...';
+                document.body.appendChild(overlay);
+                cw.style.zoom = '';
+                requestAnimationFrame(doSave);
+            } else {
+                doSave();
+            }
         });
     </script>
 </body>
