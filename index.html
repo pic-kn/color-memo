@@ -752,7 +752,7 @@
     <div id="scale-wrapper">
     <div id="app-container">
 
-        <div id="canvas-wrapper">
+        <div id="canvas-scale-wrapper"><div id="canvas-wrapper">
             <div id="drop-overlay">DROP IMAGE HERE</div>
             <div class="watermark">@pic_kn__</div>
             <div class="photo-container">
@@ -768,7 +768,7 @@
                 <div class="palette-item"><div class="color-circle" style="background-color:#eee;"></div><span class="color-code">#------</span></div>
                 <div class="palette-item"><div class="color-circle" style="background-color:#eee;"></div><span class="color-code">#------</span></div>
             </div>
-        </div>
+        </div></div><!-- /canvas-scale-wrapper -->
 
         <div class="ui-bar">
             <input type="file" id="image-input" accept="image/*" style="display:none">
@@ -944,27 +944,39 @@
 
         /* ── レスポンシブスケーリング ── */
         function scaleApp() {
-            const appContainer = document.getElementById('app-container');
-            const scaleWrapper  = document.getElementById('scale-wrapper');
-            const canvasWrapper = document.getElementById('canvas-wrapper');
-            const uiBar         = document.querySelector('.ui-bar');
+            const appContainer    = document.getElementById('app-container');
+            const scaleWrapper    = document.getElementById('scale-wrapper');
+            const canvasWrapper   = document.getElementById('canvas-wrapper');
+            const canvasScaleWrap = document.getElementById('canvas-scale-wrapper');
+            const uiBar           = document.querySelector('.ui-bar');
 
             if (window.innerWidth <= 768) {
                 const mobileWidth  = window.innerWidth - 48;
-                const zoomFactor   = mobileWidth / 1200;
-                appContainer.style.transform = 'none';
-                appContainer.style.width     = mobileWidth + 'px';
-                canvasWrapper.style.zoom     = zoomFactor;
-                uiBar.style.width            = mobileWidth + 'px';
-                scaleWrapper.style.height    = 'auto';
+                const mobileHeight = Math.round(mobileWidth * 9 / 16);
+                const factor       = mobileWidth / 1200;
+
+                appContainer.style.transform       = 'none';
+                appContainer.style.width           = mobileWidth + 'px';
+                uiBar.style.width                  = mobileWidth + 'px';
+                scaleWrapper.style.height          = 'auto';
+                canvasScaleWrap.style.width        = mobileWidth + 'px';
+                canvasScaleWrap.style.height       = mobileHeight + 'px';
+                canvasScaleWrap.style.overflow     = 'hidden';
+                canvasWrapper.style.transform      = `scale(${factor})`;
+                canvasWrapper.style.transformOrigin = 'top left';
                 return;
             }
 
-            // PC
-            appContainer.style.transform = '';
-            appContainer.style.width     = '';
-            canvasWrapper.style.zoom     = '';
-            uiBar.style.width            = '';
+            // PC reset
+            appContainer.style.transform       = '';
+            appContainer.style.width           = '';
+            uiBar.style.width                  = '';
+            canvasScaleWrap.style.width        = '';
+            canvasScaleWrap.style.height       = '';
+            canvasScaleWrap.style.overflow     = '';
+            canvasWrapper.style.transform      = '';
+            canvasWrapper.style.transformOrigin = '';
+
             const margin = 40;
             const scale  = Math.min(0.82, (window.innerWidth - margin) / 1200);
             appContainer.style.transform = `scale(${scale})`;
@@ -1061,33 +1073,62 @@
 
         /* ── 保存 ── */
         document.getElementById('save-btn').addEventListener('click', () => {
-            const cw          = document.getElementById('canvas-wrapper');
-            const currentZoom = cw.style.zoom;
+            const cw           = document.getElementById('canvas-wrapper');
+            const csw          = document.getElementById('canvas-scale-wrapper');
+            const isTransformed = !!cw.style.transform;
+            const isIOS        = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-            const doSave = () => {
-                html2canvas(cw, { scale: 2 }).then(canvas => {
-                    if (currentZoom) {
-                        cw.style.zoom = currentZoom;
-                        document.body.removeChild(document.getElementById('save-overlay'));
+            const doCapture = () => {
+                html2canvas(cw, { scale: 2, useCORS: true }).then(canvas => {
+                    // transform を復元
+                    if (isTransformed) {
+                        const factor = (window.innerWidth - 48) / 1200;
+                        cw.style.transform       = `scale(${factor})`;
+                        cw.style.transformOrigin = 'top left';
                     }
-                    const link = document.createElement('a');
-                    link.download = 'color_memo.png';
-                    link.href = canvas.toDataURL();
-                    link.click();
+                    // overlay を除去
+                    const ov = document.getElementById('save-overlay');
+                    if (ov) document.body.removeChild(ov);
+
+                    const dataURL = canvas.toDataURL('image/png');
+
+                    if (isIOS) {
+                        // iOS Safari: <a download> 非対応のためモーダル表示
+                        const modal = document.createElement('div');
+                        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:16px;';
+                        const img = document.createElement('img');
+                        img.src = dataURL;
+                        img.style.cssText = 'max-width:100%;border-radius:2px;';
+                        const msg = document.createElement('p');
+                        msg.style.cssText = 'color:rgba(255,255,255,0.7);font-size:11px;letter-spacing:0.2em;text-align:center;line-height:1.8;';
+                        msg.textContent = '画像を長押しして「写真に保存」してください';
+                        const closeBtn = document.createElement('button');
+                        closeBtn.textContent = '閉じる';
+                        closeBtn.style.cssText = 'background:transparent;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.7);padding:8px 28px;font-size:11px;letter-spacing:0.2em;cursor:pointer;margin-top:4px;';
+                        closeBtn.addEventListener('click', () => document.body.removeChild(modal));
+                        modal.append(img, msg, closeBtn);
+                        document.body.appendChild(modal);
+                    } else {
+                        const link = document.createElement('a');
+                        link.download = 'color_memo.png';
+                        link.href = dataURL;
+                        link.click();
+                    }
                 });
             };
 
-            if (currentZoom) {
-                // モバイル：zoom を一時解除してフルサイズでキャプチャ
+            if (isTransformed) {
+                // モバイル：transform を一時解除してフルサイズキャプチャ
+                cw.style.transform       = '';
+                cw.style.transformOrigin = '';
                 const overlay = document.createElement('div');
                 overlay.id = 'save-overlay';
-                overlay.style.cssText = 'position:fixed;inset:0;background:rgba(252,252,252,0.93);z-index:9999;display:flex;align-items:center;justify-content:center;font-size:11px;letter-spacing:0.25em;color:#4a6370;';
+                overlay.style.cssText = 'position:fixed;inset:0;background:rgba(252,252,252,0.93);z-index:9998;display:flex;align-items:center;justify-content:center;font-size:11px;letter-spacing:0.25em;color:#4a6370;';
                 overlay.textContent = '保存中...';
                 document.body.appendChild(overlay);
-                cw.style.zoom = '';
-                requestAnimationFrame(doSave);
+                setTimeout(doCapture, 50);
             } else {
-                doSave();
+                doCapture();
             }
         });
     </script>
