@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>color memo</title>
+    <!-- Adobe Fonts (Typekit) kit: ubu6orw -->
+    <script>
+      (function(d) {
+        var config = {
+          kitId: 'ubu6orw',
+          scriptTimeout: 3000,
+          async: true
+        },
+        h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
+      })(document);
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --base:    #FCFCFC;
+            --accent:  #3E7E9A;
+            --mid:     #73A0B1;
+            --light1:  #BDCBCC;
+            --light2:  #98B6BE;
+            --ink:     #1e2c33;
+            --ink-dim: #4a6370;
+
+            /* マッピング */
+            --bg:           var(--base);
+            --bg-white:     #ffffff;
+            --text-main:    var(--ink-dim);
+            --text-dark:    var(--ink);
+            --text-light:   var(--light2);
+            --border-subtle: rgba(0, 0, 0, 0.04);
+            --ui-color:     var(--ink-dim);
+            --ui-border:    var(--light1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ─────────────────────────
+           BLOBS（背景装飾）
+        ───────────────────────── */
+        @keyframes float1 {
+            0%   { transform: translate(0px, 0px) scale(1); border-radius: 72% 28% 44% 56% / 43% 65% 35% 57%; }
+            33%  { transform: translate(30px, 20px) scale(1.04); border-radius: 55% 45% 60% 40% / 55% 35% 65% 45%; }
+            66%  { transform: translate(-20px, 35px) scale(0.97); border-radius: 40% 60% 50% 50% / 40% 60% 40% 60%; }
+            100% { transform: translate(0px, 0px) scale(1); border-radius: 72% 28% 44% 56% / 43% 65% 35% 57%; }
+        }
+        @keyframes float2 {
+            0%   { transform: translate(0px, 0px) scale(1); border-radius: 38% 62% 57% 43% / 49% 31% 69% 51%; }
+            33%  { transform: translate(-25px, 30px) scale(1.05); border-radius: 60% 40% 40% 60% / 60% 50% 50% 40%; }
+            66%  { transform: translate(20px, -20px) scale(0.96); border-radius: 50% 50% 65% 35% / 35% 65% 45% 55%; }
+            100% { transform: translate(0px, 0px) scale(1); border-radius: 38% 62% 57% 43% / 49% 31% 69% 51%; }
+        }
+        @keyframes float3 {
+            0%   { transform: translate(0px, 0px) scale(1); border-radius: 55% 45% 68% 32% / 47% 60% 40% 53%; }
+            50%  { transform: translate(35px, -30px) scale(1.06); border-radius: 40% 60% 45% 55% / 60% 40% 60% 40%; }
+            100% { transform: translate(0px, 0px) scale(1); border-radius: 55% 45% 68% 32% / 47% 60% 40% 53%; }
+        }
+        @keyframes float4 {
+            0%   { transform: translate(0px, 0px) scale(1); border-radius: 44% 56% 35% 65% / 64% 38% 62% 36%; }
+            33%  { transform: translate(-30px, -25px) scale(1.03); border-radius: 60% 40% 55% 45% / 45% 60% 40% 60%; }
+            66%  { transform: translate(15px, 30px) scale(0.98); border-radius: 35% 65% 42% 58% / 55% 45% 55% 45%; }
+            100% { transform: translate(0px, 0px) scale(1); border-radius: 44% 56% 35% 65% / 64% 38% 62% 36%; }
+        }
+        @keyframes float5 {
+            0%   { transform: translate(0px, 0px) scale(1); border-radius: 63% 37% 52% 48% / 55% 42% 58% 45%; }
+            50%  { transform: translate(-20px, -35px) scale(1.05); border-radius: 45% 55% 38% 62% / 42% 58% 45% 55%; }
+            100% { transform: translate(0px, 0px) scale(1); border-radius: 63% 37% 52% 48% / 55% 42% 58% 45%; }
+        }
+
+        .bg-blob {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(40px);
+        }
+
+        /* くすみレインボー: 彩度25〜35%で統一 */
+        .blob-1 {
+            width: 280px; height: 240px;
+            background: linear-gradient(135deg, hsl(0,30%,84%), hsl(25,30%,83%));
+            top: -80px; left: -60px;
+            opacity: 0.6;
+            animation: float1 14s ease-in-out infinite;
+        }
+        .blob-2 {
+            width: 220px; height: 260px;
+            background: linear-gradient(210deg, hsl(30,32%,83%), hsl(60,28%,84%));
+            top: 10%; right: -60px;
+            opacity: 0.5;
+            animation: float2 18s ease-in-out infinite;
+        }
+        .blob-3 {
+            width: 260px; height: 200px;
+            background: linear-gradient(45deg, hsl(80,25%,81%), hsl(120,25%,80%));
+            top: 38%; left: -50px;
+            opacity: 0.45;
+            animation: float3 16s ease-in-out infinite;
+        }
+        .blob-4 {
+            width: 200px; height: 240px;
+            background: linear-gradient(300deg, hsl(160,28%,80%), hsl(190,30%,81%));
+            bottom: 12%; right: 2%;
+            opacity: 0.5;
+            animation: float4 20s ease-in-out infinite;
+        }
+        .blob-5 {
+            width: 180px; height: 170px;
+            background: linear-gradient(160deg, hsl(210,30%,81%), hsl(240,28%,82%));
+            bottom: -40px; left: 28%;
+            opacity: 0.45;
+            animation: float5 12s ease-in-out infinite;
+        }
+        .blob-6 {
+            width: 240px; height: 200px;
+            background: linear-gradient(80deg, hsl(260,25%,82%), hsl(290,28%,83%));
+            top: 22%; left: 20%;
+            opacity: 0.35;
+            animation: float2 22s ease-in-out infinite;
+        }
+        .blob-7 {
+            width: 200px; height: 220px;
+            background: linear-gradient(240deg, hsl(300,28%,83%), hsl(330,30%,84%));
+            top: 60%; right: 18%;
+            opacity: 0.45;
+            animation: float3 17s ease-in-out infinite;
+        }
+        .blob-8 {
+            width: 160px; height: 180px;
+            background: linear-gradient(320deg, hsl(350,30%,84%), hsl(20,30%,83%));
+            top: 5%; left: 45%;
+            opacity: 0.4;
+            animation: float1 19s ease-in-out infinite;
+        }
+        .blob-9 {
+            width: 220px; height: 190px;
+            background: linear-gradient(100deg, hsl(140,25%,81%), hsl(170,28%,80%));
+            bottom: 30%; left: 8%;
+            opacity: 0.4;
+            animation: float4 15s ease-in-out infinite;
+        }
+        .blob-10 {
+            width: 180px; height: 160px;
+            background: linear-gradient(190deg, hsl(220,28%,81%), hsl(250,26%,82%));
+            bottom: 5%; right: 30%;
+            opacity: 0.35;
+            animation: float5 21s ease-in-out infinite;
+        }
+
+        /* コンテンツをblobより前面に */
+        body > *:not(.bg-blob) {
+            position: relative;
+            z-index: 1;
+        }
+
+        body {
+            background-color: var(--bg);
+            font-family: fot-tsukuardgothic-std, sans-serif;
+            font-style: normal;
+            font-weight: 400;
+            color: var(--text-dark);
+        }
+
+        /* ─────────────────────────
+           共通レイアウト
+        ───────────────────────── */
+        .section-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        /* ─────────────────────────
+           HEADER
+        ───────────────────────── */
+        .page-header {
+            padding: 72px 0 64px;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 400;
+            letter-spacing: 0.35em;
+            margin-bottom: 16px;
+            background: linear-gradient(
+                90deg,
+                hsl(0,30%,72%),
+                hsl(40,30%,72%),
+                hsl(80,25%,70%),
+                hsl(160,28%,69%),
+                hsl(220,30%,70%),
+                hsl(270,26%,71%),
+                hsl(320,28%,72%)
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-header p {
+            font-size: 12px;
+            letter-spacing: 0.2em;
+            color: var(--ink-dim);
+        }
+
+        /* ─────────────────────────
+           TOOL（スケーリング）
+        ───────────────────────── */
+        #scale-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            padding: 0 0 80px;
+        }
+
+        #app-container {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            transform-origin: top center;
+            width: 1200px;
+        }
+
+        .ui-bar {
+            width: 1200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            padding-top: 20px;
+        }
+
+        .ui-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ui-btn {
+            font-family: fot-tsukuardgothic-std, sans-serif;
+            font-weight: 400;
+            font-size: 10px;
+            letter-spacing: 0.22em;
+            color: var(--ui-color);
+            background: transparent;
+            border: 1px solid var(--ui-border);
+            padding: 7px 18px;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+            outline: none;
+        }
+
+        .ui-btn:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        #save-btn {
+            font-size: 12px;
+            padding: 14px 40px;
+            background: var(--base);
+            color: var(--ink-dim);
+            border: 1px solid var(--ink-dim);
+            border-radius: 8px;
+        }
+
+        #save-btn:hover {
+            background: var(--ink-dim);
+            border-color: var(--ink-dim);
+            color: var(--base);
+        }
+
+        .filename-display {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            color: rgba(80, 80, 80, 0.35);
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        #canvas-wrapper {
+            width: 1200px;
+            height: 675px;
+            background-color: var(--bg-white);
+            display: flex;
+            align-items: stretch;
+            padding: 50px 32px 50px 52px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.05);
+            position: relative;
+            gap: 0;
+        }
+
+        #drop-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.88);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            letter-spacing: 0.25em;
+            color: var(--ui-color);
+            border: 1.5px dashed var(--ui-border);
+            pointer-events: none;
+        }
+
+        #drop-overlay.active { display: flex; }
+
+        .photo-container {
+            width: 900px;
+            flex-shrink: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f1f1f1;
+            position: relative;
+        }
+
+        #main-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .photo-container {
+            cursor: pointer;
+        }
+
+        .photo-container:hover #placeholder {
+            opacity: 0.55 !important;
+        }
+
+        .watermark {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            font-family: fot-tsukuardgothic-std, sans-serif;
+            font-size: 15px;
+            color: rgba(80, 80, 80, 0.6);
+            letter-spacing: -0.05em;
+            pointer-events: none;
+            z-index: 10;
+            white-space: nowrap;
+            transform: rotate(90deg);
+            transform-origin: top left;
+        }
+
+        .palette-section {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 31px;
+            padding: 0 10px;
+        }
+
+        .palette-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .color-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .color-code {
+            font-family: fot-tsukuardgothic-std, sans-serif;
+            font-style: normal;
+            font-weight: 400;
+            font-size: 16px;
+            color: var(--text-main);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        /* ─────────────────────────
+           MINI STEPS
+        ───────────────────────── */
+        .mini-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 48px 0 36px;
+        }
+
+        .mini-step {
+            font-size: 11px;
+            letter-spacing: 0.22em;
+            color: var(--text-light);
+        }
+
+        .mini-arrow {
+            font-size: 10px;
+            color: var(--ui-border);
+            letter-spacing: 0;
+        }
+
+        /* ─────────────────────────
+           CAROUSEL
+        ───────────────────────── */
+        .carousel-section {
+            width: 100%;
+            overflow: hidden;
+            padding: 0 0 80px;
+        }
+
+        .carousel-track-wrapper {
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .carousel-track {
+            display: flex;
+            gap: 16px;
+            transition: transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform;
+        }
+
+        .carousel-card {
+            flex-shrink: 0;
+            width: 560px;
+            aspect-ratio: 16 / 9;
+            background-color: #ebebeb;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .carousel-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* 画像未設定時のプレースホルダー */
+        .carousel-card .placeholder-card {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            letter-spacing: 0.3em;
+            color: rgba(80,80,80,0.2);
+        }
+
+        .carousel-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 28px;
+        }
+
+        .carousel-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: var(--ui-border);
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border: none;
+            padding: 0;
+        }
+
+        .carousel-dot.active {
+            background-color: var(--accent);
+        }
+
+        /* ─────────────────────────
+           HOW TO USE
+        ───────────────────────── */
+        .how-to-section {
+            padding: 100px 0 90px;
+        }
+
+        .section-label {
+            font-size: 10px;
+            letter-spacing: 0.4em;
+            color: var(--mid);
+            margin-bottom: 52px;
+            text-transform: uppercase;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 48px;
+        }
+
+        .step-icon {
+            width: 36px;
+            height: 36px;
+            margin-bottom: 20px;
+            color: var(--mid);
+        }
+
+        .step-number {
+            font-size: 11px;
+            letter-spacing: 0.3em;
+            color: var(--mid);
+            margin-bottom: 18px;
+        }
+
+        .step-title {
+            font-size: 15px;
+            letter-spacing: 0.15em;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+
+        .step-desc {
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            color: var(--text-light);
+            line-height: 1.9;
+        }
+
+        .step-divider {
+            width: 24px;
+            height: 1px;
+            background-color: var(--light2);
+            margin-bottom: 20px;
+        }
+
+        /* ─────────────────────────
+           CTA
+        ───────────────────────── */
+        .cta-section {
+            padding: 80px 0 90px;
+            border-top: 1px solid rgba(80, 80, 80, 0.08);
+            text-align: center;
+        }
+
+        .cta-section .section-label {
+            margin-bottom: 28px;
+        }
+
+        .cta-title {
+            font-size: 18px;
+            letter-spacing: 0.2em;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+        }
+
+        .cta-desc {
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            color: var(--text-light);
+            line-height: 2;
+            margin-bottom: 40px;
+        }
+
+        .cta-hashtag {
+            display: inline-block;
+            font-size: 14px;
+            letter-spacing: 0.12em;
+            color: var(--accent);
+            border-bottom: 1px solid var(--mid);
+            padding-bottom: 2px;
+            margin-bottom: 44px;
+        }
+
+        .cta-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .cta-btn {
+            font-family: fot-tsukuardgothic-std, sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.22em;
+            color: var(--ui-color);
+            background: transparent;
+            border: 1px solid var(--ui-border);
+            padding: 10px 28px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.2s, border-color 0.2s;
+            display: inline-block;
+        }
+
+        .cta-btn:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* ─────────────────────────
+           FOOTER
+        ───────────────────────── */
+        .page-footer {
+            border-top: 1px solid rgba(80, 80, 80, 0.08);
+            padding: 40px 0;
+        }
+
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-name {
+            font-size: 11px;
+            letter-spacing: 0.25em;
+            color: var(--text-light);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 32px;
+        }
+
+        .footer-link {
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ── BACKGROUND BLOBS ── -->
+    <div class="bg-blob blob-1" aria-hidden="true"></div>
+    <div class="bg-blob blob-2" aria-hidden="true"></div>
+    <div class="bg-blob blob-3" aria-hidden="true"></div>
+    <div class="bg-blob blob-4" aria-hidden="true"></div>
+    <div class="bg-blob blob-5" aria-hidden="true"></div>
+    <div class="bg-blob blob-6" aria-hidden="true"></div>
+    <div class="bg-blob blob-7" aria-hidden="true"></div>
+    <div class="bg-blob blob-8" aria-hidden="true"></div>
+    <div class="bg-blob blob-9" aria-hidden="true"></div>
+    <div class="bg-blob blob-10" aria-hidden="true"></div>
+
+    <!-- ── HEADER ── -->
+    <header class="page-header">
+        <div class="section-inner">
+            <h1>color memo</h1>
+            <p>写真から、5色を記録する。</p>
+        </div>
+    </header>
+
+    <!-- ── CAROUSEL ── -->
+    <section class="carousel-section">
+        <div class="carousel-track-wrapper">
+            <div class="carousel-track" id="carousel-track">
+                <div class="carousel-card"><img src="images/01.png" onerror="this.src='images/01.jpg'" alt="palette 01"></div>
+                <div class="carousel-card"><img src="images/02.png" onerror="this.src='images/02.jpg'" alt="palette 02"></div>
+                <div class="carousel-card"><img src="images/03.png" onerror="this.src='images/03.jpg'" alt="palette 03"></div>
+                <div class="carousel-card"><img src="images/04.png" onerror="this.src='images/04.jpg'" alt="palette 04"></div>
+                <div class="carousel-card"><img src="images/05.png" onerror="this.src='images/05.jpg'" alt="palette 05"></div>
+                <div class="carousel-card"><img src="images/06.png" onerror="this.src='images/06.jpg'" alt="palette 06"></div>
+                <div class="carousel-card"><img src="images/07.png" onerror="this.src='images/07.jpg'" alt="palette 07"></div>
+                <div class="carousel-card"><img src="images/08.png" onerror="this.src='images/08.jpg'" alt="palette 08"></div>
+                <div class="carousel-card"><img src="images/09.png" onerror="this.src='images/09.jpg'" alt="palette 09"></div>
+                <div class="carousel-card"><img src="images/10.png" onerror="this.src='images/10.jpg'" alt="palette 10"></div>
+            </div>
+        </div>
+        <div class="carousel-dots" id="carousel-dots"></div>
+    </section>
+
+    <!-- ── MINI STEPS ── -->
+    <div class="mini-steps">
+        <span class="mini-step">01 &nbsp;写真を選ぶ</span>
+        <span class="mini-arrow">→</span>
+        <span class="mini-step">02 &nbsp;パレット生成</span>
+        <span class="mini-arrow">→</span>
+        <span class="mini-step">03 &nbsp;保存してシェア</span>
+    </div>
+
+    <!-- ── TOOL ── -->
+    <div id="scale-wrapper">
+    <div id="app-container">
+
+        <div id="canvas-wrapper">
+            <div id="drop-overlay">DROP IMAGE HERE</div>
+            <div class="watermark">@pic_kn__</div>
+            <div class="photo-container">
+                <img id="main-photo">
+                <div id="placeholder" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:12px; opacity:0.35; text-align:center; letter-spacing:0.18em; line-height:2; white-space:nowrap; pointer-events:none;">
+                    クリックして写真を選ぶ<br>またはここにドラッグ＆ドロップ
+                </div>
+            </div>
+            <div class="palette-section" id="palette-target">
+                <div class="palette-item"><div class="color-circle" style="background-color:#eee;"></div><span class="color-code">#------</span></div>
+                <div class="palette-item"><div class="color-circle" style="background-color:#eee;"></div><span class="color-code">#------</span></div>
+                <div class="palette-item"><div class="color-circle" style="background-color:#eee;"></div><span class="color-code">#------</span></div>
+                <div class="palette-item"><div class="color-circle" style="background-color:#eee;"></div><span class="color-code">#------</span></div>
+                <div class="palette-item"><div class="color-circle" style="background-color:#eee;"></div><span class="color-code">#------</span></div>
+            </div>
+        </div>
+
+        <div class="ui-bar">
+            <input type="file" id="image-input" accept="image/*" style="display:none">
+            <span id="filename-display" class="filename-display"></span>
+            <button id="save-btn" class="ui-btn">画像を保存する</button>
+        </div>
+
+    </div><!-- /app-container -->
+    </div><!-- /scale-wrapper -->
+
+    <!-- ── HOW TO USE ── -->
+    <section class="how-to-section">
+        <div class="section-inner">
+            <p class="section-label">How to use</p>
+            <div class="steps">
+                <div class="step">
+                    <!-- 写真をアップロード -->
+                    <svg class="step-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="7" width="30" height="22" rx="2"/>
+                        <circle cx="13" cy="17" r="3.5"/>
+                        <path d="M3 25 l8-7 5 5 5-4 12 9"/>
+                        <path d="M24 3 l4 4 -4 4M28 7 H18"/>
+                    </svg>
+                    <p class="step-number">01</p>
+                    <div class="step-divider"></div>
+                    <p class="step-title">写真を読み込む</p>
+                    <p class="step-desc">プレビュー画面をクリックするか、写真をドラッグ＆ドロップしてください。</p>
+                </div>
+                <div class="step">
+                    <!-- カラーパレット -->
+                    <svg class="step-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="18" r="14"/>
+                        <circle cx="11" cy="13" r="2.5" fill="currentColor" stroke="none"/>
+                        <circle cx="20" cy="10" r="2.5" fill="currentColor" stroke="none"/>
+                        <circle cx="27" cy="16" r="2.5" fill="currentColor" stroke="none"/>
+                        <circle cx="25" cy="24" r="2.5" fill="currentColor" stroke="none"/>
+                        <circle cx="14" cy="25" r="2.5" fill="currentColor" stroke="none"/>
+                        <circle cx="18" cy="18" r="5" fill="white" stroke="currentColor"/>
+                    </svg>
+                    <p class="step-number">02</p>
+                    <div class="step-divider"></div>
+                    <p class="step-title">パレットが生成される</p>
+                    <p class="step-desc">写真から自動的に5色のカラーパレットを抽出します。明度のバランスを考慮して色を選びます。</p>
+                </div>
+                <div class="step">
+                    <!-- 保存＆シェア -->
+                    <svg class="step-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 4 v18M11 15 l7 7 7-7"/>
+                        <path d="M6 26 v4 h24 v-4"/>
+                    </svg>
+                    <p class="step-number">03</p>
+                    <div class="step-divider"></div>
+                    <p class="step-title">保存してシェア</p>
+                    <p class="step-desc">「画像を保存する」ボタンで書き出し。そのままSNSに投稿できます。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── CTA ── -->
+    <section class="cta-section">
+        <div class="section-inner">
+            <p class="section-label">Share</p>
+            <p class="cta-title">あなたのカラーパレットを見せてください</p>
+            <p class="cta-desc">
+                生成した画像をXまたはInstagramに投稿したら<br>
+                ぜひ @pic_kn__ にリプライを送ってください。
+            </p>
+            <p class="cta-hashtag">#みんなのカラーパレット</p>
+            <div class="cta-links">
+                <a href="https://x.com/pic_kn__" target="_blank" class="cta-btn">X (Twitter)</a>
+                <a href="https://www.instagram.com/pic_kn__/" target="_blank" class="cta-btn">Instagram</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── FOOTER ── -->
+    <footer class="page-footer">
+        <div class="footer-inner">
+            <span class="footer-name">@pic_kn__</span>
+            <nav class="footer-links">
+                <a href="https://blue-glint.studio.site" target="_blank" class="footer-link">Website</a>
+                <a href="https://x.com/pic_kn__" target="_blank" class="footer-link">X</a>
+                <a href="https://www.instagram.com/pic_kn__/" target="_blank" class="footer-link">Instagram</a>
+            </nav>
+        </div>
+    </footer>
+
+    <script>
+        /* ── カルーセル ── */
+        (function () {
+            const track    = document.getElementById('carousel-track');
+            const dotsWrap = document.getElementById('carousel-dots');
+            const cards    = track.querySelectorAll('.carousel-card');
+            const cardW    = 560 + 16; // width + gap
+            const visible  = Math.round(window.innerWidth / cardW);
+            const total    = cards.length;
+            let current    = 0;
+            let timer;
+
+            // オフセット：左端に半端なカードを見せてカルーセル感を出す
+            const offsetPx = (window.innerWidth - cardW * Math.floor(window.innerWidth / cardW)) / 2;
+            track.style.paddingLeft = offsetPx + 'px';
+
+            // ドット生成
+            const steps = total - Math.floor(window.innerWidth / cardW) + 1;
+            for (let i = 0; i < Math.max(steps, 1); i++) {
+                const dot = document.createElement('button');
+                dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+                dot.addEventListener('click', () => goTo(i));
+                dotsWrap.appendChild(dot);
+            }
+
+            function goTo(index) {
+                current = Math.max(0, Math.min(index, total - 1));
+                track.style.transform = `translateX(-${current * cardW}px)`;
+                dotsWrap.querySelectorAll('.carousel-dot').forEach((d, i) => {
+                    d.classList.toggle('active', i === current);
+                });
+            }
+
+            function autoPlay() {
+                timer = setInterval(() => {
+                    goTo(current + 1 >= total ? 0 : current + 1);
+                }, 6000);
+            }
+
+            track.addEventListener('mouseenter', () => clearInterval(timer));
+            track.addEventListener('mouseleave', autoPlay);
+
+            // 横スワイプ（トラックパッド）で切り替え
+            let wheelCooldown = false;
+            document.querySelector('.carousel-section').addEventListener('wheel', (e) => {
+                if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) return; // 縦スクロールは無視
+                e.preventDefault();
+                if (wheelCooldown) return;
+                wheelCooldown = true;
+                clearInterval(timer);
+                goTo(e.deltaX > 0 ? current + 1 >= total ? 0 : current + 1 : current - 1 < 0 ? total - 1 : current - 1);
+                setTimeout(() => {
+                    wheelCooldown = false;
+                    autoPlay();
+                }, 1400);
+            }, { passive: false });
+
+            autoPlay();
+        })();
+
+        /* ── レスポンシブスケーリング ── */
+        function scaleApp() {
+            const margin = 40;
+            const scale = Math.min(0.82, (window.innerWidth - margin) / 1200);
+            const appContainer = document.getElementById('app-container');
+            const scaleWrapper = document.getElementById('scale-wrapper');
+            appContainer.style.transform = `scale(${scale})`;
+            scaleWrapper.style.height = (appContainer.offsetHeight * scale + 40) + 'px';
+        }
+        window.addEventListener('resize', scaleApp);
+        window.addEventListener('load', scaleApp);
+
+        const colorThief      = new ColorThief();
+        const imageInput      = document.getElementById('image-input');
+        const mainPhoto       = document.getElementById('main-photo');
+        const paletteTarget   = document.getElementById('palette-target');
+        const filenameDisplay = document.getElementById('filename-display');
+        const dropOverlay     = document.getElementById('drop-overlay');
+        const canvasWrapper   = document.getElementById('canvas-wrapper');
+        let currentTextColor  = 'rgba(80,80,80,0.6)';
+
+        /* ── ファイル選択（プレビュー画面クリック） ── */
+        document.querySelector('.photo-container').addEventListener('click', () => imageInput.click());
+        imageInput.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) loadFile(file);
+        });
+
+        /* ── ドラッグ＆ドロップ ── */
+        canvasWrapper.addEventListener('dragover', e => {
+            e.preventDefault();
+            dropOverlay.classList.add('active');
+        });
+        canvasWrapper.addEventListener('dragleave', e => {
+            if (!canvasWrapper.contains(e.relatedTarget)) dropOverlay.classList.remove('active');
+        });
+        canvasWrapper.addEventListener('drop', e => {
+            e.preventDefault();
+            dropOverlay.classList.remove('active');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) loadFile(file);
+        });
+
+        /* ── ファイル読み込み ── */
+        function loadFile(file) {
+            filenameDisplay.textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = event => {
+                mainPhoto.src = event.target.result;
+                mainPhoto.onload = () => {
+                    document.getElementById('placeholder').style.display = 'none';
+                    mainPhoto.style.display = 'block';
+                    generatePalette();
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /* ── カラー抽出 ── */
+        function rgbToHsl(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            const max = Math.max(r, g, b), min = Math.min(r, g, b);
+            const l = (max + min) / 2;
+            if (max === min) return { s: 0 };
+            const d = max - min;
+            const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            return { s };
+        }
+
+        function generatePalette() {
+            const rawColors = colorThief.getPalette(mainPhoto, 15);
+            const mapped = rawColors.map(rgb => {
+                const hex = '#' + rgb.map(x => x.toString(16).padStart(2, '0')).join('');
+                const lum = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+                const { s } = rgbToHsl(rgb[0], rgb[1], rgb[2]);
+                return { hex, lum, s };
+            }).sort((a, b) => a.lum - b.lum);
+
+            const finalColors = [
+                mapped[0],
+                mapped[Math.floor(mapped.length * 0.3)],
+                mapped[Math.floor(mapped.length * 0.5)],
+                mapped[Math.floor(mapped.length * 0.7)],
+                mapped[mapped.length - 1]
+            ];
+
+            const textColor = finalColors.reduce((prev, curr) => curr.s < prev.s ? curr : prev).hex;
+            currentTextColor = textColor;
+            document.querySelector('.watermark').style.color = textColor;
+
+            paletteTarget.innerHTML = '';
+            finalColors.forEach(c => {
+                paletteTarget.innerHTML += `
+                    <div class="palette-item">
+                        <div class="color-circle" style="background-color:${c.hex}"></div>
+                        <span class="color-code" style="color:${textColor}">${c.hex}</span>
+                    </div>`;
+            });
+        }
+
+        /* ── 保存 ── */
+        document.getElementById('save-btn').addEventListener('click', () => {
+            html2canvas(canvasWrapper, { scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'color_memo.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        });
+    </script>
+</body>
+
+</html>
