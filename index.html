@@ -1063,7 +1063,10 @@
             const finalColors = [main, dark1, dark2, light1, light2]
                 .sort((a, b) => a.lum - b.lum);
 
-            const textColor = finalColors.reduce((prev, curr) => curr.s < prev.s ? curr : prev).hex;
+            // テキストカラー：① コントラスト比3:1以上にフィルタ → ② 最も暗い色を選択
+            // finalColors は明度昇順なので [0] が最も暗い
+            const readable = finalColors.filter(c => 1.05 / (c.lum / 255 + 0.05) >= 3);
+            const textColor = (readable.length > 0 ? readable[0] : finalColors[0]).hex;
             currentTextColor = textColor;
             document.querySelector('.watermark').style.color = textColor;
 
