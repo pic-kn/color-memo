@@ -1060,39 +1060,56 @@
             r /= 255; g /= 255; b /= 255;
             const max = Math.max(r, g, b), min = Math.min(r, g, b);
             const l = (max + min) / 2;
-            if (max === min) return { s: 0 };
+            if (max === min) return { h: 0, s: 0 };
             const d = max - min;
             const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-            return { s };
+            let h;
+            if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+            else if (max === g) h = (b - r) / d + 2;
+            else h = (r - g) / d + 4;
+            return { h: h / 6, s };
         }
 
         function generatePalette() {
-            const rawColors = colorThief.getPalette(mainPhoto, 15);
+            const rawColors = colorThief.getPalette(mainPhoto, 20);
             const mapped = rawColors.map(rgb => {
                 const hex = '#' + rgb.map(x => x.toString(16).padStart(2, '0')).join('');
                 const lum = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
-                const { s } = rgbToHsl(rgb[0], rgb[1], rgb[2]);
-                return { hex, lum, s };
+                const { h, s } = rgbToHsl(rgb[0], rgb[1], rgb[2]);
+                return { hex, lum, s, h };
             });
 
-            // ColorThief 1番目 = 最も割合の高いメインカラー
-            const main = mapped[0];
+            // 基準色相：最も割合の多い色の色相
+            const mainHue = mapped[0].h;
+            const hueDist = (h1, h2) => { const d = Math.abs(h1 - h2); return Math.min(d, 1 - d); };
 
-            // 残りを明度順にソート → 暗い2色・明るい2色を選ぶ
-            const rest = mapped.slice(1).sort((a, b) => a.lum - b.lum);
-            const dark1  = rest[0];
-            const dark2  = rest[Math.floor(rest.length * 0.25)];
-            const light1 = rest[Math.floor(rest.length * 0.75)];
-            const light2 = rest[rest.length - 1];
+            // 基準色相±54度以内 + 低彩度（ニュートラル）に絞る
+            const HUE_RANGE = 0.15;
+            const filtered = mapped.filter(c => c.s < 0.15 || hueDist(c.h, mainHue) <= HUE_RANGE);
+            const candidates = filtered.length >= 5 ? filtered : mapped;
 
-            // 5色を明度順にソートして表示
-            const finalColors = [main, dark1, dark2, light1, light2]
-                .sort((a, b) => a.lum - b.lum);
+            // 明度順に均等5色を選択してグラデに
+            const sorted = [...candidates].sort((a, b) => a.lum - b.lum);
+            const n = sorted.length;
+            const finalColors = [
+                sorted[0],
+                sorted[Math.floor(n * 0.25)],
+                sorted[Math.floor(n * 0.5)],
+                sorted[Math.floor(n * 0.75)],
+                sorted[n - 1]
+            ];
 
-            // テキストカラー：① コントラスト比3:1以上にフィルタ → ② 最も暗い色を選択
-            // finalColors は明度昇順なので [0] が最も暗い
-            const readable = finalColors.filter(c => 1.05 / (c.lum / 255 + 0.05) >= 3);
-            const textColor = (readable.length > 0 ? readable[0] : finalColors[0]).hex;
+            // テキストカラー：暗いパレットは明るい色、明るいパレットは暗い色
+            const avgLum = finalColors.reduce((sum, c) => sum + c.lum, 0) / finalColors.length;
+            let textColor;
+            if (avgLum < 100) {
+                // 暗いパレット → 最も明るい色を文字色に
+                textColor = finalColors[finalColors.length - 1].hex;
+            } else {
+                // 明るいパレット → コントラスト比3:1以上の中で最も暗い色
+                const readable = finalColors.filter(c => 1.05 / (c.lum / 255 + 0.05) >= 3);
+                textColor = (readable.length > 0 ? readable[0] : finalColors[0]).hex;
+            }
             currentTextColor = textColor;
             document.querySelector('.watermark').style.color = textColor;
 
