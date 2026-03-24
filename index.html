@@ -644,6 +644,23 @@
         }
 
         /* ─────────────────────────
+           STEP HEADER（アイコン＋番号 横並び）
+        ───────────────────────── */
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .step-header .step-icon {
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+        .step-header .step-number {
+            margin-bottom: 0;
+        }
+
+        /* ─────────────────────────
            MOBILE RESPONSIVE
         ───────────────────────── */
         @media (max-width: 768px) {
@@ -653,58 +670,6 @@
             /* Header */
             .page-header { padding: 48px 0 32px; }
             .page-header h1 { font-size: 22px; }
-
-            /* Scale wrapper — スケーリング無効 */
-            #scale-wrapper {
-                padding: 0 16px 60px;
-                height: auto !important;
-            }
-            #app-container {
-                width: 100% !important;
-                transform: none !important;
-            }
-
-            /* Canvas wrapper — 縦並びに */
-            #canvas-wrapper {
-                width: 100% !important;
-                height: auto !important;
-                flex-direction: column;
-                padding: 20px 16px;
-                gap: 16px;
-            }
-
-            .photo-container {
-                width: 100% !important;
-                aspect-ratio: 16 / 9;
-                height: auto !important;
-            }
-
-            /* パレット — 横並びに */
-            .palette-section {
-                flex-direction: row;
-                justify-content: center;
-                gap: 8px;
-                padding: 4px 0;
-            }
-
-            .color-circle { width: 38px; height: 38px; }
-            .color-code { font-size: 10px; letter-spacing: 0.04em; }
-
-            .watermark { display: none; }
-
-            /* UIバー */
-            .ui-bar {
-                width: 100% !important;
-                flex-direction: column;
-                align-items: stretch;
-                padding-top: 12px;
-            }
-            #save-btn { width: 100%; }
-            .filename-display { max-width: 100%; text-align: center; }
-
-            /* Carousel */
-            .carousel-section { padding: 0 0 60px; }
-            .carousel-card { width: calc(100vw - 48px); }
 
             /* Mini steps */
             .mini-steps {
@@ -821,41 +786,47 @@
             <p class="section-label">How to use</p>
             <div class="steps">
                 <div class="step">
-                    <!-- 写真をアップロード -->
-                    <svg class="step-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="7" width="30" height="22" rx="2"/>
-                        <circle cx="13" cy="17" r="3.5"/>
-                        <path d="M3 25 l8-7 5 5 5-4 12 9"/>
-                        <path d="M24 3 l4 4 -4 4M28 7 H18"/>
-                    </svg>
-                    <p class="step-number">01</p>
+                    <div class="step-header">
+                        <!-- 写真をアップロード -->
+                        <svg class="step-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="7" width="30" height="22" rx="2"/>
+                            <circle cx="13" cy="17" r="3.5"/>
+                            <path d="M3 25 l8-7 5 5 5-4 12 9"/>
+                            <path d="M24 3 l4 4 -4 4M28 7 H18"/>
+                        </svg>
+                        <p class="step-number">01</p>
+                    </div>
                     <div class="step-divider"></div>
                     <p class="step-title">写真を読み込む</p>
                     <p class="step-desc">プレビュー画面をクリックするか、写真をドラッグ＆ドロップしてください。</p>
                 </div>
                 <div class="step">
-                    <!-- カラーパレット -->
-                    <svg class="step-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="18" cy="18" r="14"/>
-                        <circle cx="11" cy="13" r="2.5" fill="currentColor" stroke="none"/>
-                        <circle cx="20" cy="10" r="2.5" fill="currentColor" stroke="none"/>
-                        <circle cx="27" cy="16" r="2.5" fill="currentColor" stroke="none"/>
-                        <circle cx="25" cy="24" r="2.5" fill="currentColor" stroke="none"/>
-                        <circle cx="14" cy="25" r="2.5" fill="currentColor" stroke="none"/>
-                        <circle cx="18" cy="18" r="5" fill="white" stroke="currentColor"/>
-                    </svg>
-                    <p class="step-number">02</p>
+                    <div class="step-header">
+                        <!-- カラーパレット -->
+                        <svg class="step-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="18" cy="18" r="14"/>
+                            <circle cx="11" cy="13" r="2.5" fill="currentColor" stroke="none"/>
+                            <circle cx="20" cy="10" r="2.5" fill="currentColor" stroke="none"/>
+                            <circle cx="27" cy="16" r="2.5" fill="currentColor" stroke="none"/>
+                            <circle cx="25" cy="24" r="2.5" fill="currentColor" stroke="none"/>
+                            <circle cx="14" cy="25" r="2.5" fill="currentColor" stroke="none"/>
+                            <circle cx="18" cy="18" r="5" fill="white" stroke="currentColor"/>
+                        </svg>
+                        <p class="step-number">02</p>
+                    </div>
                     <div class="step-divider"></div>
                     <p class="step-title">パレットが生成される</p>
                     <p class="step-desc">写真から自動的に5色のカラーパレットを抽出します。明度のバランスを考慮して色を選びます。</p>
                 </div>
                 <div class="step">
-                    <!-- 保存＆シェア -->
-                    <svg class="step-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 4 v18M11 15 l7 7 7-7"/>
-                        <path d="M6 26 v4 h24 v-4"/>
-                    </svg>
-                    <p class="step-number">03</p>
+                    <div class="step-header">
+                        <!-- 保存＆シェア -->
+                        <svg class="step-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 4 v18M11 15 l7 7 7-7"/>
+                            <path d="M6 26 v4 h24 v-4"/>
+                        </svg>
+                        <p class="step-number">03</p>
+                    </div>
                     <div class="step-divider"></div>
                     <p class="step-title">保存してシェア</p>
                     <p class="step-desc">「画像を保存する」ボタンで書き出し。そのままSNSに投稿できます。</p>
@@ -956,17 +927,12 @@
             autoPlay();
         })();
 
-        /* ── レスポンシブスケーリング（PC のみ） ── */
+        /* ── レスポンシブスケーリング ── */
         function scaleApp() {
-            const appContainer = document.getElementById('app-container');
-            const scaleWrapper = document.getElementById('scale-wrapper');
-            if (window.innerWidth <= 768) {
-                appContainer.style.transform = '';
-                scaleWrapper.style.height = '';
-                return;
-            }
             const margin = 40;
             const scale = Math.min(0.82, (window.innerWidth - margin) / 1200);
+            const appContainer = document.getElementById('app-container');
+            const scaleWrapper = document.getElementById('scale-wrapper');
             appContainer.style.transform = `scale(${scale})`;
             scaleWrapper.style.height = (appContainer.offsetHeight * scale + 40) + 'px';
         }
