@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>color memo</title>
     <!-- Adobe Fonts (Typekit) kit: ubu6orw -->
     <script>
@@ -641,6 +642,95 @@
         .footer-link:hover {
             color: var(--accent);
         }
+
+        /* ─────────────────────────
+           MOBILE RESPONSIVE
+        ───────────────────────── */
+        @media (max-width: 768px) {
+
+            .section-inner { padding: 0 20px; }
+
+            /* Header */
+            .page-header { padding: 48px 0 32px; }
+            .page-header h1 { font-size: 22px; }
+
+            /* Scale wrapper — スケーリング無効 */
+            #scale-wrapper {
+                padding: 0 16px 60px;
+                height: auto !important;
+            }
+            #app-container {
+                width: 100% !important;
+                transform: none !important;
+            }
+
+            /* Canvas wrapper — 縦並びに */
+            #canvas-wrapper {
+                width: 100% !important;
+                height: auto !important;
+                flex-direction: column;
+                padding: 20px 16px;
+                gap: 16px;
+            }
+
+            .photo-container {
+                width: 100% !important;
+                aspect-ratio: 16 / 9;
+                height: auto !important;
+            }
+
+            /* パレット — 横並びに */
+            .palette-section {
+                flex-direction: row;
+                justify-content: center;
+                gap: 8px;
+                padding: 4px 0;
+            }
+
+            .color-circle { width: 38px; height: 38px; }
+            .color-code { font-size: 10px; letter-spacing: 0.04em; }
+
+            .watermark { display: none; }
+
+            /* UIバー */
+            .ui-bar {
+                width: 100% !important;
+                flex-direction: column;
+                align-items: stretch;
+                padding-top: 12px;
+            }
+            #save-btn { width: 100%; }
+            .filename-display { max-width: 100%; text-align: center; }
+
+            /* Carousel */
+            .carousel-section { padding: 0 0 60px; }
+            .carousel-card { width: calc(100vw - 48px); }
+
+            /* Mini steps */
+            .mini-steps {
+                padding: 28px 20px;
+                flex-wrap: wrap;
+                gap: 10px;
+                justify-content: center;
+            }
+
+            /* How to use */
+            .how-to-section { padding: 60px 0 50px; }
+            .steps { grid-template-columns: 1fr; gap: 32px; }
+
+            /* CTA */
+            .cta-section { padding: 60px 0 60px; }
+            .cta-links { flex-direction: column; align-items: center; }
+            .cta-btn { width: 200px; text-align: center; }
+
+            /* Footer */
+            .footer-inner {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            .footer-links { gap: 24px; }
+        }
     </style>
 </head>
 
@@ -809,14 +899,17 @@
             const track    = document.getElementById('carousel-track');
             const dotsWrap = document.getElementById('carousel-dots');
             const cards    = track.querySelectorAll('.carousel-card');
-            const cardW    = 560 + 16; // width + gap
-            const visible  = Math.round(window.innerWidth / cardW);
             const total    = cards.length;
             let current    = 0;
             let timer;
 
+            // モバイルとPCでカード幅を切り替え
+            const isMobile = window.innerWidth <= 768;
+            const cardVisualW = isMobile ? (window.innerWidth - 48) : 560;
+            const cardW = cardVisualW + 16; // width + gap
+
             // オフセット：左端に半端なカードを見せてカルーセル感を出す
-            const offsetPx = (window.innerWidth - cardW * Math.floor(window.innerWidth / cardW)) / 2;
+            const offsetPx = isMobile ? 16 : (window.innerWidth - cardW * Math.floor(window.innerWidth / cardW)) / 2;
             track.style.paddingLeft = offsetPx + 'px';
 
             // ドット生成
@@ -863,12 +956,17 @@
             autoPlay();
         })();
 
-        /* ── レスポンシブスケーリング ── */
+        /* ── レスポンシブスケーリング（PC のみ） ── */
         function scaleApp() {
-            const margin = 40;
-            const scale = Math.min(0.82, (window.innerWidth - margin) / 1200);
             const appContainer = document.getElementById('app-container');
             const scaleWrapper = document.getElementById('scale-wrapper');
+            if (window.innerWidth <= 768) {
+                appContainer.style.transform = '';
+                scaleWrapper.style.height = '';
+                return;
+            }
+            const margin = 40;
+            const scale = Math.min(0.82, (window.innerWidth - margin) / 1200);
             appContainer.style.transform = `scale(${scale})`;
             scaleWrapper.style.height = (appContainer.offsetHeight * scale + 40) + 'px';
         }
