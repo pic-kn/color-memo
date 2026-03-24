@@ -470,6 +470,18 @@
             color: var(--text-light);
             text-decoration: underline;
         }
+        #thumb-lightbox {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(0,0,0,0.82);
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px;
+            cursor: pointer;
+        }
+        #thumb-lightbox img {
+            max-width: 100%; max-height: 90vh;
+            border-radius: 2px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
         @media (max-width: 768px) {
             .saved-thumb {
                 width: calc((100vw - 80px) / 2);
@@ -1277,10 +1289,13 @@
                 const img       = document.createElement('img');
                 img.className   = 'saved-thumb';
                 img.src         = dataURL;
+                img.style.cursor = 'pointer';
+                img.addEventListener('click', () => openLightbox(dataURL));
                 const removeBtn = document.createElement('button');
                 removeBtn.className = 'saved-remove';
                 removeBtn.textContent = '×';
-                removeBtn.addEventListener('click', () => {
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     savedImages.splice(i, 1);
                     updateTray();
                 });
@@ -1296,6 +1311,16 @@
 
             const shareBtn = document.getElementById('share-all-btn');
             shareBtn.style.display = savedImages.length > 0 ? 'inline-block' : 'none';
+        }
+
+        function openLightbox(dataURL) {
+            const lb = document.createElement('div');
+            lb.id = 'thumb-lightbox';
+            const img = document.createElement('img');
+            img.src = dataURL;
+            lb.appendChild(img);
+            lb.addEventListener('click', () => document.body.removeChild(lb));
+            document.body.appendChild(lb);
         }
 
         document.getElementById('clear-btn').addEventListener('click', () => {
