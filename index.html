@@ -164,6 +164,7 @@
             font-style: normal;
             font-weight: 400;
             color: var(--text-dark);
+            overflow-x: hidden;
         }
 
         /* ─────────────────────────
@@ -217,6 +218,7 @@
             justify-content: center;
             width: 100%;
             padding: 0 0 80px;
+            overflow: hidden;
         }
 
         #app-container {
@@ -671,6 +673,14 @@
             .page-header { padding: 48px 0 32px; }
             .page-header h1 { font-size: 22px; }
 
+            /* Scale wrapper */
+            #scale-wrapper { padding: 0 0 40px; }
+            .ui-bar { justify-content: center; }
+
+            /* Carousel */
+            .carousel-section { padding: 0 0 60px; }
+            .carousel-card { width: calc(100vw - 48px); }
+
             /* Mini steps */
             .mini-steps {
                 padding: 28px 20px;
@@ -874,10 +884,13 @@
             let current    = 0;
             let timer;
 
-            const cardW    = 560 + 16; // width + gap
+            // モバイルとPCでカード幅を切り替え
+            const isMobile = window.innerWidth <= 768;
+            const cardVisualW = isMobile ? (window.innerWidth - 48) : 560;
+            const cardW = cardVisualW + 16; // width + gap
 
             // オフセット：左端に半端なカードを見せてカルーセル感を出す
-            const offsetPx = (window.innerWidth - cardW * Math.floor(window.innerWidth / cardW)) / 2;
+            const offsetPx = isMobile ? 16 : (window.innerWidth - cardW * Math.floor(window.innerWidth / cardW)) / 2;
             track.style.paddingLeft = offsetPx + 'px';
 
             // ドット生成
