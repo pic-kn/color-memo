@@ -249,7 +249,7 @@
             justify-content: center;
             width: 100%;
             padding: 0 0 80px;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         #app-container {
@@ -1122,8 +1122,9 @@
 
             const margin = 40;
             const scale  = Math.min(0.82, (window.innerWidth - margin) / 1200);
-            appContainer.style.transform = `scale(${scale})`;
-            scaleWrapper.style.height    = (appContainer.offsetHeight * scale + 40) + 'px';
+            appContainer.style.transform       = `scale(${scale})`;
+            appContainer.style.transformOrigin = 'top center';
+            scaleWrapper.style.height          = (appContainer.offsetHeight * scale + 40) + 'px';
         }
         window.addEventListener('resize', scaleApp);
         window.addEventListener('load', scaleApp);
@@ -1215,7 +1216,6 @@
                         document.getElementById('placeholder').style.display = 'none';
                         showImage(mainPhoto);
                         document.getElementById('save-btn').style.display = '';
-                        scaleApp();
                         generatePalette();
                         setTimeout(() => {
                             const cw = document.getElementById('canvas-wrapper');
@@ -1353,7 +1353,6 @@
                         document.getElementById('placeholder').style.display = 'none';
                         showImage(mainPhoto);
                         document.getElementById('save-btn').style.display = '';
-                        scaleApp();
                         generatePalette();
                     };
                 });
@@ -1379,7 +1378,6 @@
                         document.querySelectorAll('.color-circle').forEach(c => c.style.background = '#e8e8e8');
                         document.querySelectorAll('.color-code').forEach(c => c.textContent = '#------');
                         document.getElementById('save-btn').style.display = 'none';
-                        scaleApp();
                     }
                 });
                 wrapper.append(img, removeBtn);
