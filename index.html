@@ -1288,30 +1288,25 @@
             const mainHue = dominantHsl.h;
             const hueDist = (h1, h2) => { const d = Math.abs(h1 - h2); return Math.min(d, 1 - d); };
 
-            // ── メイン4色：支配色と近い色相 + 低彩度ニュートラル ──
+            // 支配色グループ：近い色相 + 低彩度ニュートラル
             const HUE_RANGE = 0.15;
             const mainGroup = mapped.filter(c => c.s < 0.15 || hueDist(c.h, mainHue) <= HUE_RANGE);
-            const mainCandidates = mainGroup.length >= 4 ? mainGroup : mapped;
+            const mainCandidates = mainGroup.length >= 5 ? mainGroup : mapped;
             const sortedByLum = [...mainCandidates].sort((a, b) => a.lum - b.lum);
             const n = sortedByLum.length;
 
-            // 暗い2色・明るい2色
-            const mainColors = [
+            // 暗い2色・明るい3色
+            const selected = [
                 sortedByLum[0],
-                sortedByLum[Math.floor(n * 0.25)],
+                sortedByLum[Math.floor(n * 0.2)],
+                sortedByLum[Math.floor(n * 0.5)],
                 sortedByLum[Math.floor(n * 0.75)],
                 sortedByLum[n - 1]
             ];
 
-            // 彩度を統一（4色の平均彩度）してhex再計算
-            const avgS = mainColors.reduce((sum, c) => sum + c.s, 0) / mainColors.length;
-            const unifiedMain = mainColors.map(c => ({ ...c, hex: hslToHex(c.h, avgS, c.l) }));
-
-            // ── アクセント1色：最も彩度が高く明度が中間（最も主張の強い）色 ──
-            const assertiveness = c => c.s * (1 - Math.abs(c.l - 0.5) * 2);
-            const accent = mapped.reduce((best, c) => assertiveness(c) > assertiveness(best) ? c : best, mapped[0]);
-
-            const finalColors = [...unifiedMain, accent];
+            // 彩度を統一（5色の平均彩度）してhex再計算
+            const avgS = selected.reduce((sum, c) => sum + c.s, 0) / selected.length;
+            const finalColors = selected.map(c => ({ ...c, hex: hslToHex(c.h, avgS, c.l) }));
 
             // テキストカラー：暗いパレットは明るい色、明るいパレットは暗い色
             const avgLum = finalColors.reduce((sum, c) => sum + c.lum, 0) / finalColors.length;
