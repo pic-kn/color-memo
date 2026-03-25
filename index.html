@@ -1150,11 +1150,7 @@
         imageInput.addEventListener('change', e => {
             const files = e.target.files;
             if (!files.length) return;
-            if (files.length > 1) {
-                processFiles(files);
-            } else {
-                loadFile(files[0]);
-            }
+            processFiles(files);
             imageInput.value = '';
         });
 
@@ -1169,8 +1165,8 @@
         canvasWrapper.addEventListener('drop', e => {
             e.preventDefault();
             dropOverlay.classList.remove('active');
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) loadFile(file);
+            const files = e.dataTransfer.files;
+            if (files.length && files[0].type.startsWith('image/')) processFiles(files);
         });
 
         /* ── 複数ファイル一括処理 ── */
@@ -1227,22 +1223,6 @@
                 };
                 reader.readAsDataURL(file);
             });
-        }
-
-        /* ── ファイル読み込み ── */
-        function loadFile(file) {
-            const reader = new FileReader();
-            reader.onload = event => {
-                mainPhoto.src = event.target.result;
-                mainPhoto.onload = () => {
-                    document.getElementById('placeholder').style.display = 'none';
-                    mainPhoto.style.display = 'block';
-                    mainPhoto.style.visibility = 'visible';
-                    document.getElementById('save-btn').style.display = '';
-                    generatePalette();
-                };
-            };
-            reader.readAsDataURL(file);
         }
 
         /* ── カラー抽出 ── */
@@ -1424,11 +1404,6 @@
                     if (ov) document.body.removeChild(ov);
 
                     const dataURL = canvas.toDataURL('image/png');
-
-                    if (savedImages.length < 4) {
-                        savedImages.push({ rendered: dataURL, original: mainPhoto.src });
-                        updateTray();
-                    }
 
                     if (isIOS) {
                         // iOS Safari: <a download> 非対応のためモーダル表示
