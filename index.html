@@ -416,6 +416,12 @@
             text-transform: uppercase;
         }
 
+        .palette-divider {
+            width: 18px;
+            height: 1px;
+            opacity: 0.25;
+        }
+
         /* ─────────────────────────
            MINI STEPS
         ───────────────────────── */
@@ -1303,6 +1309,32 @@
             // 暗い2色・明るい3色
             const finalColors = [0, 0.2, 0.6, 0.8, 1.0].map(p => pickColor(p));
 
+            // アクセントカラー：支配色相から外れた最も鮮やかな色
+            const accentPixels = [];
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i], g = data[i + 1], b = data[i + 2];
+                const { h, s } = rgbToHsl(r, g, b);
+                if (s >= 0.15 && hueDist(h, mainHue) > HUE_RANGE) {
+                    accentPixels.push({ r, g, b, h, s });
+                }
+            }
+            let accentHex = null;
+            if (accentPixels.length > 0) {
+                const buckets = {};
+                accentPixels.forEach(p => {
+                    const key = Math.floor(p.h * 12);
+                    if (!buckets[key]) buckets[key] = [];
+                    buckets[key].push(p);
+                });
+                const dominantBucket = Object.values(buckets).sort((a, b) => b.length - a.length)[0];
+                dominantBucket.sort((a, b) => b.s - a.s);
+                const topCount = Math.max(1, Math.floor(dominantBucket.length * 0.2));
+                let rS = 0, gS = 0, bS = 0;
+                for (let i = 0; i < topCount; i++) { rS += dominantBucket[i].r; gS += dominantBucket[i].g; bS += dominantBucket[i].b; }
+                const r = Math.round(rS / topCount), g = Math.round(gS / topCount), b = Math.round(bS / topCount);
+                accentHex = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+            }
+
             // テキストカラー：暗いパレットは明るい色、明るいパレットは暗い色
             const avgLum = finalColors.reduce((sum, c) => sum + c.lum, 0) / finalColors.length;
             let textColor;
@@ -1325,6 +1357,14 @@
                         <span class="color-code" style="color:${textColor}">${c.hex}</span>
                     </div>`;
             });
+            if (accentHex) {
+                paletteTarget.innerHTML += `
+                    <div class="palette-divider" style="background-color:${textColor}"></div>
+                    <div class="palette-item">
+                        <div class="color-circle" style="background-color:${accentHex}"></div>
+                        <span class="color-code" style="color:${textColor}">${accentHex}</span>
+                    </div>`;
+            }
         }
 
         /* ── 保存済みトレイ ── */
