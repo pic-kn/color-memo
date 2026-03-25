@@ -157,9 +157,38 @@
         }
 
         /* コンテンツをblobより前面に */
-        body > *:not(.bg-blob) {
+        body > *:not(.bg-blob):not(#page-loader) {
             position: relative;
             z-index: 1;
+        }
+
+        /* ─────────────────────────
+           PAGE LOADER (B style)
+        ───────────────────────── */
+        #page-loader {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-white);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.4s ease;
+        }
+        #page-loader.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loader-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid var(--light1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
 
         body {
@@ -796,6 +825,11 @@
 
 <body>
 
+    <!-- ── PAGE LOADER ── -->
+    <div id="page-loader" aria-hidden="true">
+        <div class="loader-spinner"></div>
+    </div>
+
     <!-- ── BACKGROUND BLOBS ── -->
     <div class="bg-blob blob-1" aria-hidden="true"></div>
     <div class="bg-blob blob-2" aria-hidden="true"></div>
@@ -1422,7 +1456,21 @@
             };
 
             if (isTransformed) {
-                // モバイル：transform を一時解除してフルサイズキャプチャ
+                // ─── PAGE LOADER 消去 ───
+        (function() {
+            const loader = document.getElementById('page-loader');
+            function hideLoader() {
+                loader.classList.add('fade-out');
+                loader.addEventListener('transitionend', () => loader.remove(), { once: true });
+            }
+            if (document.readyState === 'complete') {
+                hideLoader();
+            } else {
+                window.addEventListener('load', hideLoader);
+            }
+        })();
+
+        // モバイル：transform を一時解除してフルサイズキャプチャ
                 cw.style.transform       = '';
                 cw.style.transformOrigin = '';
                 const overlay = document.createElement('div');
