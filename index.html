@@ -1254,34 +1254,53 @@
         }
 
         function generatePalette() {
-            const rawColors = colorThief.getPalette(mainPhoto, 20);
-            const mapped = rawColors.map(rgb => {
-                const hex = '#' + rgb.map(x => x.toString(16).padStart(2, '0')).join('');
-                const lum = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
-                const { h, s } = rgbToHsl(rgb[0], rgb[1], rgb[2]);
-                return { hex, lum, s, h };
-            });
+            // 1. 画像を縮小してピクセルデータを直接取得
+            const offscreen = document.createElement('canvas');
+            const MAX = 150;
+            const scale = Math.min(MAX / mainPhoto.naturalWidth, MAX / mainPhoto.naturalHeight, 1);
+            offscreen.width  = Math.max(1, Math.round(mainPhoto.naturalWidth  * scale));
+            offscreen.height = Math.max(1, Math.round(mainPhoto.naturalHeight * scale));
+            const octx = offscreen.getContext('2d');
+            octx.drawImage(mainPhoto, 0, 0, offscreen.width, offscreen.height);
+            const { data } = octx.getImageData(0, 0, offscreen.width, offscreen.height);
 
-            // 基準色相：支配色（最も割合の多い色）から取得
+            // 2. 支配色の色相を基準とする
             const dominantRgb = colorThief.getColor(mainPhoto);
             const mainHue = rgbToHsl(dominantRgb[0], dominantRgb[1], dominantRgb[2]).h;
             const hueDist = (h1, h2) => { const d = Math.abs(h1 - h2); return Math.min(d, 1 - d); };
 
-            // 色相距離が近い順に並べ、上位10色を候補とする
-            const candidates = [...mapped]
-                .sort((a, b) => hueDist(a.h, mainHue) - hueDist(b.h, mainHue))
-                .slice(0, 10);
+            // 3. 支配色相±36°以内のピクセルを抽出（低彩度のニュートラルも含む）
+            const HUE_RANGE = 0.1;
+            const pixels = [];
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i], g = data[i + 1], b = data[i + 2];
+                const { h, s } = rgbToHsl(r, g, b);
+                if (s < 0.08 || hueDist(h, mainHue) <= HUE_RANGE) {
+                    pixels.push({ r, g, b, lum: 0.2126 * r + 0.7152 * g + 0.0722 * b });
+                }
+            }
+            if (pixels.length === 0) return;
 
-            // 明度順に並べ、暗い2色・明るい3色でグラデ
-            const sorted = [...candidates].sort((a, b) => a.lum - b.lum);
-            const n = sorted.length;
-            const finalColors = [
-                sorted[0],
-                sorted[Math.floor(n * 0.2)],
-                sorted[Math.floor(n * 0.6)],
-                sorted[Math.floor(n * 0.8)],
-                sorted[n - 1]
-            ];
+            // 4. 明度順にソートし、各明度帯の平均色を算出
+            pixels.sort((a, b) => a.lum - b.lum);
+            const n = pixels.length;
+            const pickColor = p => {
+                const center = Math.floor(p * (n - 1));
+                const half   = Math.max(1, Math.floor(n * 0.04));
+                const lo = Math.max(0, center - half);
+                const hi = Math.min(n - 1, center + half);
+                let rS = 0, gS = 0, bS = 0;
+                for (let i = lo; i <= hi; i++) { rS += pixels[i].r; gS += pixels[i].g; bS += pixels[i].b; }
+                const cnt = hi - lo + 1;
+                const r = Math.round(rS / cnt), g = Math.round(gS / cnt), b = Math.round(bS / cnt);
+                return {
+                    hex: '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join(''),
+                    lum: 0.2126 * r + 0.7152 * g + 0.0722 * b
+                };
+            };
+
+            // 暗い2色・明るい3色
+            const finalColors = [0, 0.2, 0.6, 0.8, 1.0].map(p => pickColor(p));
 
             // テキストカラー：暗いパレットは明るい色、明るいパレットは暗い色
             const avgLum = finalColors.reduce((sum, c) => sum + c.lum, 0) / finalColors.length;
