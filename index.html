@@ -1197,7 +1197,6 @@
             return new Promise(resolve => {
                 const reader = new FileReader();
                 reader.onload = ev => {
-                    mainPhoto.src = ev.target.result;
                     mainPhoto.onload = () => {
                         document.getElementById('placeholder').style.display = 'none';
                         mainPhoto.style.display = 'block';
@@ -1220,6 +1219,7 @@
                             });
                         }, 400);
                     };
+                    mainPhoto.src = ev.target.result;
                 };
                 reader.readAsDataURL(file);
             });
