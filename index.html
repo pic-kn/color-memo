@@ -1203,6 +1203,8 @@
                 mainPhoto.onload = () => {
                     document.getElementById('placeholder').style.display = 'none';
                     mainPhoto.style.display = 'block';
+                    mainPhoto.style.visibility = 'visible';
+                    document.getElementById('save-btn').style.display = '';
                     generatePalette();
                 };
             };
