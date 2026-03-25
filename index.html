@@ -157,9 +157,38 @@
         }
 
         /* コンテンツをblobより前面に */
-        body > *:not(.bg-blob) {
+        body > *:not(.bg-blob):not(#page-loader) {
             position: relative;
             z-index: 1;
+        }
+
+        /* ─────────────────────────
+           PAGE LOADER (B style)
+        ───────────────────────── */
+        #page-loader {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-white);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.4s ease;
+        }
+        #page-loader.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loader-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid var(--light1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
 
         body {
@@ -796,6 +825,11 @@
 
 <body>
 
+    <!-- ── PAGE LOADER ── -->
+    <div id="page-loader" aria-hidden="true">
+        <div class="loader-spinner"></div>
+    </div>
+
     <!-- ── BACKGROUND BLOBS ── -->
     <div class="bg-blob blob-1" aria-hidden="true"></div>
     <div class="bg-blob blob-2" aria-hidden="true"></div>
@@ -1116,11 +1150,7 @@
         imageInput.addEventListener('change', e => {
             const files = e.target.files;
             if (!files.length) return;
-            if (files.length > 1) {
-                processFiles(files);
-            } else {
-                loadFile(files[0]);
-            }
+            processFiles(files);
             imageInput.value = '';
         });
 
@@ -1135,8 +1165,8 @@
         canvasWrapper.addEventListener('drop', e => {
             e.preventDefault();
             dropOverlay.classList.remove('active');
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) loadFile(file);
+            const files = e.dataTransfer.files;
+            if (files.length && files[0].type.startsWith('image/')) processFiles(files);
         });
 
         /* ── 複数ファイル一括処理 ── */
@@ -1167,7 +1197,6 @@
             return new Promise(resolve => {
                 const reader = new FileReader();
                 reader.onload = ev => {
-                    mainPhoto.src = ev.target.result;
                     mainPhoto.onload = () => {
                         document.getElementById('placeholder').style.display = 'none';
                         mainPhoto.style.display = 'block';
@@ -1190,25 +1219,10 @@
                             });
                         }, 400);
                     };
+                    mainPhoto.src = ev.target.result;
                 };
                 reader.readAsDataURL(file);
             });
-        }
-
-        /* ── ファイル読み込み ── */
-        function loadFile(file) {
-            const reader = new FileReader();
-            reader.onload = event => {
-                mainPhoto.src = event.target.result;
-                mainPhoto.onload = () => {
-                    document.getElementById('placeholder').style.display = 'none';
-                    mainPhoto.style.display = 'block';
-                    mainPhoto.style.visibility = 'visible';
-                    document.getElementById('save-btn').style.display = '';
-                    generatePalette();
-                };
-            };
-            reader.readAsDataURL(file);
         }
 
         /* ── カラー抽出 ── */
@@ -1391,11 +1405,6 @@
 
                     const dataURL = canvas.toDataURL('image/png');
 
-                    if (savedImages.length < 4) {
-                        savedImages.push({ rendered: dataURL, original: mainPhoto.src });
-                        updateTray();
-                    }
-
                     if (isIOS) {
                         // iOS Safari: <a download> 非対応のためモーダル表示
                         const modal = document.createElement('div');
@@ -1435,6 +1444,20 @@
                 doCapture();
             }
         });
+
+        // ─── PAGE LOADER 消去 ───
+        (function() {
+            const loader = document.getElementById('page-loader');
+            function hideLoader() {
+                loader.classList.add('fade-out');
+                loader.addEventListener('transitionend', () => loader.remove(), { once: true });
+            }
+            if (document.readyState === 'complete') {
+                hideLoader();
+            } else {
+                window.addEventListener('load', hideLoader);
+            }
+        })();
     </script>
 </body>
 
