@@ -413,6 +413,7 @@
         }
 
         .mobile-upload-hint { display: none; }
+        .cloud-note { display: none; }
 
         /* ─────────────────────────
            SAVED TRAY
@@ -763,6 +764,16 @@
                 padding: 20px 0 16px;
             }
 
+            .cloud-note {
+                display: block;
+                text-align: center;
+                font-size: 10px;
+                letter-spacing: 0.05em;
+                color: var(--text-light);
+                padding: 0 20px 16px;
+                line-height: 1.6;
+            }
+
             /* How to use */
             .how-to-section { padding: 60px 0 50px; }
             .steps { grid-template-columns: 1fr; gap: 32px; }
@@ -833,6 +844,7 @@
         <span class="mini-step">03 &nbsp;保存してシェア</span>
     </div>
     <p class="mobile-upload-hint">タップして画像をアップロード</p>
+    <p class="cloud-note">※ クラウド（iCloud・Google フォトなど）上の写真は事前にデバイスへダウンロードしてから選択してください</p>
 
     <!-- ── TOOL ── -->
     <div id="scale-wrapper">
@@ -1300,6 +1312,22 @@
                     e.stopPropagation();
                     savedImages.splice(i, 1);
                     updateTray();
+                    if (savedImages.length > 0) {
+                        const next = savedImages[Math.min(i, savedImages.length - 1)];
+                        mainPhoto.src = next.original;
+                        mainPhoto.onload = () => {
+                            document.getElementById('placeholder').style.display = 'none';
+                            mainPhoto.style.display = 'block';
+                            mainPhoto.style.visibility = 'visible';
+                            generatePalette();
+                        };
+                    } else {
+                        mainPhoto.src = '';
+                        mainPhoto.style.visibility = 'hidden';
+                        document.getElementById('placeholder').style.display = 'flex';
+                        document.querySelectorAll('.color-circle').forEach(c => c.style.background = '#e8e8e8');
+                        document.querySelectorAll('.color-code').forEach(c => c.textContent = '#------');
+                    }
                 });
                 wrapper.append(img, removeBtn);
                 thumbsEl.appendChild(wrapper);
