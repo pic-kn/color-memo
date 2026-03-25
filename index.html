@@ -1215,6 +1215,7 @@
                         document.getElementById('placeholder').style.display = 'none';
                         showImage(mainPhoto);
                         document.getElementById('save-btn').style.display = '';
+                        scaleApp();
                         generatePalette();
                         setTimeout(() => {
                             const cw = document.getElementById('canvas-wrapper');
@@ -1352,6 +1353,7 @@
                         document.getElementById('placeholder').style.display = 'none';
                         showImage(mainPhoto);
                         document.getElementById('save-btn').style.display = '';
+                        scaleApp();
                         generatePalette();
                     };
                 });
@@ -1377,6 +1379,7 @@
                         document.querySelectorAll('.color-circle').forEach(c => c.style.background = '#e8e8e8');
                         document.querySelectorAll('.color-code').forEach(c => c.textContent = '#------');
                         document.getElementById('save-btn').style.display = 'none';
+                        scaleApp();
                     }
                 });
                 wrapper.append(img, removeBtn);
