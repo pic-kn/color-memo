@@ -870,7 +870,7 @@
 
         <div class="ui-bar">
             <input type="file" id="image-input" accept="image/*" multiple style="display:none">
-            <button id="save-btn" class="ui-btn">画像を保存する</button>
+            <button id="save-btn" class="ui-btn" style="display:none">画像を保存する</button>
         </div>
 
     </div><!-- /app-container -->
@@ -1172,6 +1172,7 @@
                         document.getElementById('placeholder').style.display = 'none';
                         mainPhoto.style.display = 'block';
                         mainPhoto.style.visibility = 'visible';
+                        document.getElementById('save-btn').style.display = '';
                         generatePalette();
                         setTimeout(() => {
                             const cw = document.getElementById('canvas-wrapper');
@@ -1302,6 +1303,7 @@
                         document.getElementById('placeholder').style.display = 'none';
                         mainPhoto.style.display = 'block';
                         mainPhoto.style.visibility = 'visible';
+                        document.getElementById('save-btn').style.display = '';
                         generatePalette();
                     };
                 });
@@ -1327,6 +1329,7 @@
                         document.getElementById('placeholder').style.display = 'flex';
                         document.querySelectorAll('.color-circle').forEach(c => c.style.background = '#e8e8e8');
                         document.querySelectorAll('.color-code').forEach(c => c.textContent = '#------');
+                        document.getElementById('save-btn').style.display = 'none';
                     }
                 });
                 wrapper.append(img, removeBtn);
