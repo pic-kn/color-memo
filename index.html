@@ -1262,8 +1262,9 @@
                 return { hex, lum, s, h };
             });
 
-            // 基準色相：最も割合の多い色の色相
-            const mainHue = mapped[0].h;
+            // 基準色相：支配色（最も多い色）の色相
+            const dominantRgb = colorThief.getColor(mainPhoto);
+            const mainHue = rgbToHsl(dominantRgb[0], dominantRgb[1], dominantRgb[2]).h;
             const hueDist = (h1, h2) => { const d = Math.abs(h1 - h2); return Math.min(d, 1 - d); };
 
             // 基準色相±54度以内 + 低彩度（ニュートラル）に絞る
