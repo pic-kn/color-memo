@@ -1288,10 +1288,9 @@
             const mainHue = dominantHsl.h;
             const hueDist = (h1, h2) => { const d = Math.abs(h1 - h2); return Math.min(d, 1 - d); };
 
-            // 支配色グループ：近い色相 + 低彩度ニュートラル
-            const HUE_RANGE = 0.15;
-            const mainGroup = mapped.filter(c => c.s < 0.15 || hueDist(c.h, mainHue) <= HUE_RANGE);
-            const mainCandidates = mainGroup.length >= 5 ? mainGroup : mapped;
+            // 色相距離が近い順に10色取る（フォールバックなし）
+            const sortedByHue = [...mapped].sort((a, b) => hueDist(a.h, mainHue) - hueDist(b.h, mainHue));
+            const mainCandidates = sortedByHue.slice(0, 10);
             const sortedByLum = [...mainCandidates].sort((a, b) => a.lum - b.lum);
             const n = sortedByLum.length;
 
@@ -1299,8 +1298,8 @@
             const selected = [
                 sortedByLum[0],
                 sortedByLum[Math.floor(n * 0.2)],
-                sortedByLum[Math.floor(n * 0.5)],
-                sortedByLum[Math.floor(n * 0.75)],
+                sortedByLum[Math.floor(n * 0.6)],
+                sortedByLum[Math.floor(n * 0.8)],
                 sortedByLum[n - 1]
             ];
 
