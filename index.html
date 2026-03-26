@@ -1250,7 +1250,7 @@
 
             // 明度順にソートし、重複排除（明度差12未満はスキップ）して5色選択
             mapped.sort((a, b) => a.lum - b.lum);
-            const LUM_MIN_DIFF = 12;
+            const LUM_MIN_DIFF = 25;
             const picked = [mapped[0]];
             for (const c of mapped.slice(1)) {
                 if (picked.every(p => Math.abs(p.lum - c.lum) >= LUM_MIN_DIFF)) {
@@ -1260,17 +1260,7 @@
             }
             const finalColors = picked;
 
-            // テキストカラー：暗いパレットは明るい色、明るいパレットは暗い色
-            const avgLum = finalColors.reduce((sum, c) => sum + c.lum, 0) / finalColors.length;
-            let textColor;
-            if (avgLum < 100) {
-                // 暗いパレット → 最も明るい色を文字色に
-                textColor = finalColors[finalColors.length - 1].hex;
-            } else {
-                // 明るいパレット → コントラスト比3:1以上の中で最も暗い色
-                const readable = finalColors.filter(c => 1.05 / (c.lum / 255 + 0.05) >= 3);
-                textColor = (readable.length > 0 ? readable[0] : finalColors[0]).hex;
-            }
+            const textColor = 'rgba(80,80,80,0.6)';
             currentTextColor = textColor;
             document.querySelector('.watermark').style.color = textColor;
 
