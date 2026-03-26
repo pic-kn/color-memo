@@ -1240,91 +1240,25 @@
         }
 
         /* ── カラー抽出 ── */
-        function rgbToHsl(r, g, b) {
-            r /= 255; g /= 255; b /= 255;
-            const max = Math.max(r, g, b), min = Math.min(r, g, b);
-            const l = (max + min) / 2;
-            if (max === min) return { h: 0, s: 0 };
-            const d = max - min;
-            const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-            let h;
-            if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
-            else if (max === g) h = (b - r) / d + 2;
-            else h = (r - g) / d + 4;
-            return { h: h / 6, s };
-        }
-
         function generatePalette() {
-            // 1. 画像を縮小してピクセルデータを直接取得
-            const offscreen = document.createElement('canvas');
-            const MAX = 150;
-            const scale = Math.min(MAX / mainPhoto.naturalWidth, MAX / mainPhoto.naturalHeight, 1);
-            offscreen.width  = Math.max(1, Math.round(mainPhoto.naturalWidth  * scale));
-            offscreen.height = Math.max(1, Math.round(mainPhoto.naturalHeight * scale));
-            const octx = offscreen.getContext('2d');
-            octx.drawImage(mainPhoto, 0, 0, offscreen.width, offscreen.height);
-            const { data } = octx.getImageData(0, 0, offscreen.width, offscreen.height);
+            // ColorThief で上位10色を取得
+            const rawColors = colorThief.getPalette(mainPhoto, 10);
+            const mapped = rawColors.map(rgb => ({
+                hex: '#' + rgb.map(x => x.toString(16).padStart(2, '0')).join(''),
+                lum: 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]
+            }));
 
-            // 2. 支配色の色相を基準とする
-            const dominantRgb = colorThief.getColor(mainPhoto);
-            const mainHue = rgbToHsl(dominantRgb[0], dominantRgb[1], dominantRgb[2]).h;
-            const hueDist = (h1, h2) => { const d = Math.abs(h1 - h2); return Math.min(d, 1 - d); };
-
-            // 3. 支配色相±36°以内のピクセルを抽出（低彩度のニュートラルも含む）
-            const HUE_RANGE = 0.1;
-            const pixels = [];
-            for (let i = 0; i < data.length; i += 4) {
-                const r = data[i], g = data[i + 1], b = data[i + 2];
-                const { h, s } = rgbToHsl(r, g, b);
-                if (s < 0.08 || hueDist(h, mainHue) <= HUE_RANGE) {
-                    pixels.push({ r, g, b, lum: 0.2126 * r + 0.7152 * g + 0.0722 * b });
-                }
-            }
-            if (pixels.length === 0) return;
-
-            // 4. 明度順にソートし、各明度帯の平均色を算出
-            pixels.sort((a, b) => a.lum - b.lum);
-            const n = pixels.length;
-            const pickColor = p => {
-                const center = Math.floor(p * (n - 1));
-                const half   = Math.max(1, Math.floor(n * 0.04));
-                const lo = Math.max(0, center - half);
-                const hi = Math.min(n - 1, center + half);
-                let rS = 0, gS = 0, bS = 0;
-                for (let i = lo; i <= hi; i++) { rS += pixels[i].r; gS += pixels[i].g; bS += pixels[i].b; }
-                const cnt = hi - lo + 1;
-                const r = Math.round(rS / cnt), g = Math.round(gS / cnt), b = Math.round(bS / cnt);
-                return {
-                    hex: '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join(''),
-                    lum: 0.2126 * r + 0.7152 * g + 0.0722 * b
-                };
-            };
-
-            // 5. アクセントカラー：全ピクセルから彩度×中間明度スコアが最高の色
-            let aR = 0, aG = 0, aB = 0, bestScore = -1;
-            for (let i = 0; i < data.length; i += 4) {
-                const r = data[i], g = data[i + 1], b = data[i + 2];
-                const { s } = rgbToHsl(r, g, b);
-                const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-                const score = s * (1 - Math.abs(lum / 255 - 0.5) * 2);
-                if (score > bestScore) { bestScore = score; aR = r; aG = g; aB = b; }
-            }
-            const accent = {
-                hex: '#' + [aR, aG, aB].map(x => x.toString(16).padStart(2, '0')).join(''),
-                lum: 0.2126 * aR + 0.7152 * aG + 0.0722 * aB
-            };
-
-            // 暗い1色・明るい3色＋アクセント1色、重複排除して明度均等に4色選択
+            // 明度順にソートし、重複排除（明度差12未満はスキップ）して5色選択
+            mapped.sort((a, b) => a.lum - b.lum);
             const LUM_MIN_DIFF = 12;
-            const pool = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0].map(p => pickColor(p));
-            const picked = [pool[0]];
-            for (const c of pool.slice(1)) {
+            const picked = [mapped[0]];
+            for (const c of mapped.slice(1)) {
                 if (picked.every(p => Math.abs(p.lum - c.lum) >= LUM_MIN_DIFF)) {
                     picked.push(c);
-                    if (picked.length === 4) break;
+                    if (picked.length === 5) break;
                 }
             }
-            const finalColors = picked.concat(accent).sort((a, b) => a.lum - b.lum);
+            const finalColors = picked;
 
             // テキストカラー：暗いパレットは明るい色、明るいパレットは暗い色
             const avgLum = finalColors.reduce((sum, c) => sum + c.lum, 0) / finalColors.length;
