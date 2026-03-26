@@ -1198,6 +1198,7 @@
 
         const cropPreview = document.getElementById('crop-preview');
 
+        let dropperDebounce = null;
         function updateCropPreview(e) {
             if (!dropperMode || !mainPhoto.src) return;
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -1218,6 +1219,12 @@
             cropPreview.style.width  = cropW + 'px';
             cropPreview.style.height = cropH + 'px';
             cropPreview.style.display = 'block';
+            const cx = Math.min(1, Math.max(0, (clickX - sx) / sw));
+            const cy = Math.min(1, Math.max(0, (clickY - sy) / sh));
+            clearTimeout(dropperDebounce);
+            dropperDebounce = setTimeout(() => {
+                try { generatePalette(cx, cy); } catch (err) { console.warn(err); }
+            }, 150);
         }
 
         dropperBtn.addEventListener('click', () => {
