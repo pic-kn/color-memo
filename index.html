@@ -1353,7 +1353,8 @@
 
         function generatePalette(cx, cy) {
             const iw = mainPhoto.naturalWidth, ih = mainPhoto.naturalHeight;
-            const cropW = Math.round(iw * 0.5), cropH = Math.round(ih * 0.5);
+            const cropRatio = cx !== undefined ? 0.5 : 0.7;
+            const cropW = Math.round(iw * cropRatio), cropH = Math.round(ih * cropRatio);
             const originX = cx !== undefined ? Math.round(cx * iw) : Math.round(iw / 2);
             const originY = cy !== undefined ? Math.round(cy * ih) : Math.round(ih / 2);
             const sx = Math.max(0, Math.min(iw - cropW, originX - cropW / 2));
