@@ -1358,7 +1358,8 @@
                                 if (mobileTransform) cw.style.transform = mobileTransform;
                                 const dataURL = canvas.toDataURL('image/png');
                                 if (savedImages.length < 4) {
-                                    savedImages.push({ rendered: dataURL, original: mainPhoto.src });
+                                    savedImages.push({ rendered: dataURL, original: mainPhoto.src, paletteHTML: paletteTarget.innerHTML });
+                                    currentThumbIndex = savedImages.length - 1;
                                     updateTray();
                                 }
                                 resolve();
@@ -1448,10 +1449,24 @@
                         <span class="color-code" style="color:${textColor}">${c.hex}</span>
                     </div>`;
             });
+
+            if (currentThumbIndex >= 0 && currentThumbIndex < savedImages.length) {
+                savedImages[currentThumbIndex].paletteHTML = paletteTarget.innerHTML;
+                clearTimeout(renderedUpdateTimer);
+                renderedUpdateTimer = setTimeout(() => {
+                    const cw = document.getElementById('canvas-wrapper');
+                    const idx = currentThumbIndex;
+                    html2canvas(cw, { scale: 2, useCORS: true }).then(canvas => {
+                        if (savedImages[idx]) savedImages[idx].rendered = canvas.toDataURL('image/png');
+                    });
+                }, 500);
+            }
         }
 
         /* ── 保存済みトレイ ── */
         const savedImages = [];
+        let currentThumbIndex = -1;
+        let renderedUpdateTimer = null;
 
         function updateTray() {
             const tray     = document.getElementById('saved-tray');
@@ -1471,13 +1486,18 @@
                 img.addEventListener('click', () => {
                     document.querySelectorAll('.saved-thumb-wrapper').forEach(w => w.classList.remove('active'));
                     wrapper.classList.add('active');
+                    currentThumbIndex = i;
                     mainPhoto.src = item.original;
                     mainPhoto.onload = () => {
                         document.getElementById('placeholder').style.display = 'none';
                         showImage(mainPhoto);
                         document.getElementById('save-btn').style.display = '';
                         document.getElementById('dropper-btn').style.display = '';
-                        generatePalette();
+                        if (item.paletteHTML) {
+                            paletteTarget.innerHTML = item.paletteHTML;
+                        } else {
+                            generatePalette();
+                        }
                     };
                 });
                 const removeBtn = document.createElement('button');
