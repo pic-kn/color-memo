@@ -707,8 +707,8 @@
 
         .cta-btn {
             font-family: fot-tsukuardgothic-std, sans-serif;
-            font-size: 11px;
-            letter-spacing: 0.22em;
+            font-size: 10px;
+            letter-spacing: 0.18em;
             color: var(--ui-color);
             background: transparent;
             border: 1px solid var(--ui-border);
@@ -716,7 +716,21 @@
             cursor: pointer;
             text-decoration: none;
             transition: color 0.2s, border-color 0.2s;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        #share-all-btn {
+            background: var(--base);
+            color: var(--ink-dim);
+            border: 1px solid var(--ink-dim);
+            border-radius: 8px;
+        }
+
+        #share-all-btn:hover {
+            background: var(--ink-dim);
+            color: var(--base);
         }
 
         .cta-btn:hover {
@@ -945,8 +959,14 @@
             <p class="tray-count"><span id="saved-count">0</span> / 4 枚保存済み</p>
             <div id="saved-thumbnails"></div>
             <div class="tray-actions">
-                <button id="share-all-btn" class="cta-btn" style="display:none">まとめて保存</button>
-                <a id="tweet-btn" href="#" target="_blank" rel="noopener noreferrer" class="cta-btn">X で投稿する</a>
+                <button id="share-all-btn" class="cta-btn" style="display:none">
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.1a.5.5 0 0 1 1 0v2.1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.1a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+                    まとめて保存
+                </button>
+                <a id="tweet-btn" href="#" target="_blank" rel="noopener noreferrer" class="cta-btn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    X でシェア
+                </a>
                 <button id="clear-btn" class="clear-btn">クリア</button>
             </div>
         </div>
