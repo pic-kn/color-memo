@@ -279,15 +279,20 @@
             font-family: fot-tsukuardgothic-std, sans-serif;
             font-weight: 400;
             font-size: 10px;
-            letter-spacing: 0.22em;
+            letter-spacing: 0.18em;
             color: var(--ui-color);
             background: transparent;
             border: 1px solid var(--ui-border);
-            padding: 7px 18px;
+            padding: 10px 20px;
             cursor: pointer;
             transition: color 0.2s, border-color 0.2s, background 0.2s;
             outline: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
         }
+
+        .ui-btn svg { flex-shrink: 0; }
 
         .ui-btn:hover {
             color: var(--accent);
@@ -295,8 +300,8 @@
         }
 
         #save-btn {
-            font-size: 12px;
-            padding: 14px 40px;
+            font-size: 10px;
+            padding: 10px 20px;
             background: var(--base);
             color: var(--ink-dim);
             border: 1px solid var(--ink-dim);
@@ -921,8 +926,14 @@
 
         <div class="ui-bar">
             <input type="file" id="image-input" accept="image/*" multiple style="display:none">
-            <button id="dropper-btn" class="ui-btn" style="display:none">スポイト</button>
-            <button id="save-btn" class="ui-btn" style="display:none">画像を保存する</button>
+            <button id="dropper-btn" class="ui-btn" style="display:none">
+                <svg id="dropper-icon" width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.354.646a1.207 1.207 0 0 0-1.708 0L8.5 3.793l-.646-.647a.5.5 0 1 0-.708.708L8.293 5l-7.146 7.146A.5.5 0 0 0 1 12.5v1.793l-.854.853a.5.5 0 1 0 .708.707L1.707 15H3.5a.5.5 0 0 0 .354-.146L11 7.707l1.146 1.147a.5.5 0 0 0 .708-.708l-.647-.646 3.147-3.146a1.207 1.207 0 0 0 0-1.708l-2-2z"/></svg>
+                <span id="dropper-label">色を選ぶ</span>
+            </button>
+            <button id="save-btn" class="ui-btn" style="display:none">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.1a.5.5 0 0 1 1 0v2.1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.1a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+                保存する
+            </button>
         </div>
 
     </div><!-- /app-container -->
@@ -1210,9 +1221,15 @@
 
         dropperBtn.addEventListener('click', () => {
             dropperMode = !dropperMode;
-            dropperBtn.classList.toggle('active', dropperMode);
             photoContainer.classList.toggle('dropper-active', dropperMode);
-            if (!dropperMode) cropPreview.style.display = 'none';
+            if (dropperMode) {
+                document.getElementById('dropper-icon').innerHTML = '<path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z"/>';
+                document.getElementById('dropper-label').textContent = '解除';
+            } else {
+                document.getElementById('dropper-icon').innerHTML = '<path d="M13.354.646a1.207 1.207 0 0 0-1.708 0L8.5 3.793l-.646-.647a.5.5 0 1 0-.708.708L8.293 5l-7.146 7.146A.5.5 0 0 0 1 12.5v1.793l-.854.853a.5.5 0 1 0 .708.707L1.707 15H3.5a.5.5 0 0 0 .354-.146L11 7.707l1.146 1.147a.5.5 0 0 0 .708-.708l-.647-.646 3.147-3.146a1.207 1.207 0 0 0 0-1.708l-2-2z"/>';
+                document.getElementById('dropper-label').textContent = '色を選ぶ';
+                cropPreview.style.display = 'none';
+            }
         });
 
         photoContainer.addEventListener('mousemove', updateCropPreview);
@@ -1334,38 +1351,22 @@
 
         function generatePalette(cx, cy) {
             const iw = mainPhoto.naturalWidth, ih = mainPhoto.naturalHeight;
-            const hueDist = (h1, h2) => { const d = Math.abs(h1 - h2); return Math.min(d, 1 - d); };
-
-            // まず全体解析で色相の均一性を判定
-            const fullThief = new ColorThief();
-            const fullColors = fullThief.getPalette(mainPhoto, 15);
-            const fullDominant = fullThief.getColor(mainPhoto);
-            const mainHue = rgbToHsl(fullDominant[0], fullDominant[1], fullDominant[2]).h;
-            const HUE_RANGE = 0.15;
-            const SAT_THRESHOLD = 0.2;
-            const fullMapped = fullColors.map(rgb => {
-                const { h, s } = rgbToHsl(rgb[0], rgb[1], rgb[2]);
-                return { h, s };
-            });
-            const inRangeCount = fullMapped.filter(c => c.s < SAT_THRESHOLD || hueDist(c.h, mainHue) <= HUE_RANGE).length;
-            const isUniform = inRangeCount >= Math.ceil(fullMapped.length * 0.6);
-
-            // 均一な写真は中央クロップ・多色写真は全体解析
-            let source = mainPhoto;
-            if (isUniform) {
-                const cropW = Math.round(iw * 0.7), cropH = Math.round(ih * 0.7);
-                const originX = cx !== undefined ? Math.round(cx * iw) : Math.round(iw / 2);
-                const originY = cy !== undefined ? Math.round(cy * ih) : Math.round(ih / 2);
-                const sx = Math.max(0, Math.min(iw - cropW, originX - cropW / 2));
-                const sy = Math.max(0, Math.min(ih - cropH, originY - cropH / 2));
-                const offscreen = document.createElement('canvas');
-                offscreen.width = cropW; offscreen.height = cropH;
-                offscreen.getContext('2d').drawImage(mainPhoto, sx, sy, cropW, cropH, 0, 0, cropW, cropH);
-                source = offscreen;
-            }
+            const cropW = Math.round(iw * 0.7), cropH = Math.round(ih * 0.7);
+            const originX = cx !== undefined ? Math.round(cx * iw) : Math.round(iw / 2);
+            const originY = cy !== undefined ? Math.round(cy * ih) : Math.round(ih / 2);
+            const sx = Math.max(0, Math.min(iw - cropW, originX - cropW / 2));
+            const sy = Math.max(0, Math.min(ih - cropH, originY - cropH / 2));
+            const offscreen = document.createElement('canvas');
+            offscreen.width = cropW; offscreen.height = cropH;
+            offscreen.getContext('2d').drawImage(mainPhoto, sx, sy, cropW, cropH, 0, 0, cropW, cropH);
 
             const thief = new ColorThief();
-            const rawColors = thief.getPalette(source, 15);
+            const rawColors = thief.getPalette(offscreen, 15);
+            const dominant = thief.getColor(offscreen);
+            const mainHue = rgbToHsl(dominant[0], dominant[1], dominant[2]).h;
+            const hueDist = (h1, h2) => { const d = Math.abs(h1 - h2); return Math.min(d, 1 - d); };
+            const HUE_RANGE = 0.15, SAT_THRESHOLD = 0.2;
+
             const mapped = rawColors.map(rgb => {
                 const { h, s } = rgbToHsl(rgb[0], rgb[1], rgb[2]);
                 return {
@@ -1376,7 +1377,7 @@
             });
 
             const inRange = mapped.filter(c => c.s < SAT_THRESHOLD || hueDist(c.h, mainHue) <= HUE_RANGE);
-            const candidates = isUniform && inRange.length >= 5 ? inRange : mapped;
+            const candidates = inRange.length >= 5 ? inRange : mapped;
 
             // 明度順にソートし、重複排除して5色選択
             candidates.sort((a, b) => a.lum - b.lum);
