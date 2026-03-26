@@ -363,6 +363,15 @@
             cursor: pointer;
         }
 
+        .photo-container.dropper-active {
+            cursor: crosshair;
+        }
+
+        #dropper-btn.active {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
         .photo-container:hover #placeholder {
             opacity: 0.55 !important;
         }
@@ -902,6 +911,7 @@
 
         <div class="ui-bar">
             <input type="file" id="image-input" accept="image/*" multiple style="display:none">
+            <button id="dropper-btn" class="ui-btn" style="display:none">スポイト</button>
             <button id="save-btn" class="ui-btn" style="display:none">画像を保存する</button>
         </div>
 
@@ -1160,8 +1170,36 @@
         const canvasWrapper = document.getElementById('canvas-wrapper');
         let currentTextColor = 'rgba(80,80,80,0.6)';
 
+        /* ── スポイトモード ── */
+        let dropperMode = false;
+        const photoContainer = document.querySelector('.photo-container');
+        const dropperBtn = document.getElementById('dropper-btn');
+
+        dropperBtn.addEventListener('click', () => {
+            dropperMode = !dropperMode;
+            dropperBtn.classList.toggle('active', dropperMode);
+            photoContainer.classList.toggle('dropper-active', dropperMode);
+        });
+
+        photoContainer.addEventListener('click', e => {
+            if (dropperMode && mainPhoto.src) {
+                const rect = photoCanvas.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+                const cw = photoCanvas.width, ch = photoCanvas.height;
+                const iw = mainPhoto.naturalWidth, ih = mainPhoto.naturalHeight;
+                const scale = Math.max(cw / iw, ch / ih);
+                const sw = iw * scale, sh = ih * scale;
+                const sx = (cw - sw) / 2, sy = (ch - sh) / 2;
+                const cx = Math.min(1, Math.max(0, (clickX * (cw / rect.width) - sx) / sw));
+                const cy = Math.min(1, Math.max(0, (clickY * (ch / rect.height) - sy) / sh));
+                try { generatePalette(cx, cy); } catch (e) { console.warn('generatePalette failed:', e); }
+                return;
+            }
+            if (!dropperMode) imageInput.click();
+        });
+
         /* ── ファイル選択（プレビュー画面クリック） ── */
-        document.querySelector('.photo-container').addEventListener('click', () => imageInput.click());
         imageInput.addEventListener('change', e => {
             const files = e.target.files;
             if (!files.length) return;
@@ -1216,6 +1254,7 @@
                         document.getElementById('placeholder').style.display = 'none';
                         showImage(mainPhoto);
                         document.getElementById('save-btn').style.display = '';
+                        document.getElementById('dropper-btn').style.display = '';
                         try { generatePalette(); } catch (e) { console.warn('generatePalette failed:', e); }
                         setTimeout(() => {
                             const cw = document.getElementById('canvas-wrapper');
@@ -1357,6 +1396,7 @@
                         document.getElementById('placeholder').style.display = 'none';
                         showImage(mainPhoto);
                         document.getElementById('save-btn').style.display = '';
+                        document.getElementById('dropper-btn').style.display = '';
                         generatePalette();
                     };
                 });
