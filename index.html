@@ -1280,13 +1280,12 @@
                 };
             });
 
-            // 支配色相から外れていて彩度が高い色を除外（低彩度のニュートラルは残す）
+            // 色相が均一な写真のときだけフィルターを適用（多色写真はフィルターOFF）
             const HUE_RANGE = 0.15;
             const SAT_THRESHOLD = 0.2;
-            const filtered = mapped.filter(c =>
-                c.s < SAT_THRESHOLD || hueDist(c.h, mainHue) <= HUE_RANGE
-            );
-            const candidates = filtered.length >= 5 ? filtered : mapped;
+            const inRange = mapped.filter(c => c.s < SAT_THRESHOLD || hueDist(c.h, mainHue) <= HUE_RANGE);
+            const isUniform = inRange.length >= Math.ceil(mapped.length * 0.6);
+            const candidates = isUniform && inRange.length >= 5 ? inRange : mapped;
 
             // 明度順にソートし、重複排除して5色選択
             candidates.sort((a, b) => a.lum - b.lum);
