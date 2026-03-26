@@ -1314,10 +1314,17 @@
                 lum: 0.2126 * aR + 0.7152 * aG + 0.0722 * aB
             };
 
-            // 暗い1色・明るい3色＋アクセント1色、明度順に並べる
-            const finalColors = [0.2, 0.6, 0.8, 1.0].map(p => pickColor(p))
-                .concat(accent)
-                .sort((a, b) => a.lum - b.lum);
+            // 暗い1色・明るい3色＋アクセント1色、重複排除して明度均等に4色選択
+            const LUM_MIN_DIFF = 12;
+            const pool = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0].map(p => pickColor(p));
+            const picked = [pool[0]];
+            for (const c of pool.slice(1)) {
+                if (picked.every(p => Math.abs(p.lum - c.lum) >= LUM_MIN_DIFF)) {
+                    picked.push(c);
+                    if (picked.length === 4) break;
+                }
+            }
+            const finalColors = picked.concat(accent).sort((a, b) => a.lum - b.lum);
 
             // テキストカラー：暗いパレットは明るい色、明るいパレットは暗い色
             const avgLum = finalColors.reduce((sum, c) => sum + c.lum, 0) / finalColors.length;
