@@ -1257,7 +1257,7 @@
         function generatePalette(cx, cy) {
             // 中心点（省略時は画像中央）周辺50%領域をクロップして解析
             const iw = mainPhoto.naturalWidth, ih = mainPhoto.naturalHeight;
-            const cropW = Math.round(iw * 0.5), cropH = Math.round(ih * 0.5);
+            const cropW = Math.round(iw * 0.7), cropH = Math.round(ih * 0.7);
             const originX = cx !== undefined ? Math.round(cx * iw) : Math.round(iw / 2);
             const originY = cy !== undefined ? Math.round(cy * ih) : Math.round(ih / 2);
             const sx = Math.max(0, Math.min(iw - cropW, originX - cropW / 2));
