@@ -1211,7 +1211,7 @@
             const sx = (cw - sw) / 2, sy = (ch - sh) / 2;
             const clickX = (clientX - rect.left) * (cw / rect.width);
             const clickY = (clientY - rect.top) * (ch / rect.height);
-            const cropW = sw * 0.4, cropH = sh * 0.4;
+            const cropW = sw * 0.35, cropH = sh * 0.35;
             const x = Math.min(Math.max(clickX - cropW / 2, sx), sx + sw - cropW);
             const y = Math.min(Math.max(clickY - cropH / 2, sy), sy + sh - cropH);
             cropPreview.style.left   = x + 'px';
@@ -1360,7 +1360,7 @@
 
         function generatePalette(cx, cy) {
             const iw = mainPhoto.naturalWidth, ih = mainPhoto.naturalHeight;
-            const cropRatio = cx !== undefined ? 0.4 : 0.7;
+            const cropRatio = cx !== undefined ? 0.35 : 0.7;
             const cropW = Math.round(iw * cropRatio), cropH = Math.round(ih * cropRatio);
             const originX = cx !== undefined ? Math.round(cx * iw) : Math.round(iw / 2);
             const originY = cy !== undefined ? Math.round(cy * ih) : Math.round(ih / 2);
