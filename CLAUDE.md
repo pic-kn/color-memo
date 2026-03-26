@@ -8,7 +8,9 @@
 
 ### 具体例
 
-【課題】ログイン画面のバリデーションが未実装【解決】zod + react-hook-formで入力チェックを実装【指示】zodスキーマを定義してreact-hook-formのresolveに渡してバリデーションを実装せよ
+【課題】ログイン画面のバリデーションが未実装
+【解決】zod + react-hook-formで入力チェックを実装
+【指示】zodスキーマを定義してreact-hook-formのresolveに渡してバリデーションを実装せよ
 
 ### ルール
 
