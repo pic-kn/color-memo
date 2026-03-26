@@ -1280,14 +1280,19 @@
 
             // 明度順にソートし、重複排除して5色選択
             candidates.sort((a, b) => a.lum - b.lum);
-            const LUM_MIN_DIFF = 25;
-            const picked = [candidates[0]];
-            for (const c of candidates.slice(1)) {
-                if (picked.every(p => Math.abs(p.lum - c.lum) >= LUM_MIN_DIFF)) {
-                    picked.push(c);
-                    if (picked.length === 5) break;
+            const pickN = (list, minDiff) => {
+                const result = [list[0]];
+                for (const c of list.slice(1)) {
+                    if (result.every(p => Math.abs(p.lum - c.lum) >= minDiff)) {
+                        result.push(c);
+                        if (result.length === 5) break;
+                    }
                 }
-            }
+                return result;
+            };
+            let picked = pickN(candidates, 25);
+            if (picked.length < 5) picked = pickN(candidates, 15);
+            if (picked.length < 5) picked = pickN(candidates, 8);
             const finalColors = picked;
 
             const textColor = 'rgba(80,80,80,0.6)';
