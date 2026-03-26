@@ -1255,22 +1255,39 @@
         }
 
         function generatePalette(cx, cy) {
-            // 中心点（省略時は画像中央）周辺50%領域をクロップして解析
             const iw = mainPhoto.naturalWidth, ih = mainPhoto.naturalHeight;
-            const cropW = Math.round(iw * 0.7), cropH = Math.round(ih * 0.7);
-            const originX = cx !== undefined ? Math.round(cx * iw) : Math.round(iw / 2);
-            const originY = cy !== undefined ? Math.round(cy * ih) : Math.round(ih / 2);
-            const sx = Math.max(0, Math.min(iw - cropW, originX - cropW / 2));
-            const sy = Math.max(0, Math.min(ih - cropH, originY - cropH / 2));
-            const offscreen = document.createElement('canvas');
-            offscreen.width = cropW; offscreen.height = cropH;
-            offscreen.getContext('2d').drawImage(mainPhoto, sx, sy, cropW, cropH, 0, 0, cropW, cropH);
-            const cropThief = new ColorThief();
-            const rawColors = cropThief.getPalette(offscreen, 15);
-            const dominant = cropThief.getColor(offscreen);
-            const mainHue = rgbToHsl(dominant[0], dominant[1], dominant[2]).h;
             const hueDist = (h1, h2) => { const d = Math.abs(h1 - h2); return Math.min(d, 1 - d); };
 
+            // まず全体解析で色相の均一性を判定
+            const fullThief = new ColorThief();
+            const fullColors = fullThief.getPalette(mainPhoto, 15);
+            const fullDominant = fullThief.getColor(mainPhoto);
+            const mainHue = rgbToHsl(fullDominant[0], fullDominant[1], fullDominant[2]).h;
+            const HUE_RANGE = 0.15;
+            const SAT_THRESHOLD = 0.2;
+            const fullMapped = fullColors.map(rgb => {
+                const { h, s } = rgbToHsl(rgb[0], rgb[1], rgb[2]);
+                return { h, s };
+            });
+            const inRangeCount = fullMapped.filter(c => c.s < SAT_THRESHOLD || hueDist(c.h, mainHue) <= HUE_RANGE).length;
+            const isUniform = inRangeCount >= Math.ceil(fullMapped.length * 0.6);
+
+            // 均一な写真は中央クロップ・多色写真は全体解析
+            let source = mainPhoto;
+            if (isUniform) {
+                const cropW = Math.round(iw * 0.7), cropH = Math.round(ih * 0.7);
+                const originX = cx !== undefined ? Math.round(cx * iw) : Math.round(iw / 2);
+                const originY = cy !== undefined ? Math.round(cy * ih) : Math.round(ih / 2);
+                const sx = Math.max(0, Math.min(iw - cropW, originX - cropW / 2));
+                const sy = Math.max(0, Math.min(ih - cropH, originY - cropH / 2));
+                const offscreen = document.createElement('canvas');
+                offscreen.width = cropW; offscreen.height = cropH;
+                offscreen.getContext('2d').drawImage(mainPhoto, sx, sy, cropW, cropH, 0, 0, cropW, cropH);
+                source = offscreen;
+            }
+
+            const thief = new ColorThief();
+            const rawColors = thief.getPalette(source, 15);
             const mapped = rawColors.map(rgb => {
                 const { h, s } = rgbToHsl(rgb[0], rgb[1], rgb[2]);
                 return {
@@ -1280,11 +1297,7 @@
                 };
             });
 
-            // 色相が均一な写真のときだけフィルターを適用（多色写真はフィルターOFF）
-            const HUE_RANGE = 0.15;
-            const SAT_THRESHOLD = 0.2;
             const inRange = mapped.filter(c => c.s < SAT_THRESHOLD || hueDist(c.h, mainHue) <= HUE_RANGE);
-            const isUniform = inRange.length >= Math.ceil(mapped.length * 0.6);
             const candidates = isUniform && inRange.length >= 5 ? inRange : mapped;
 
             // 明度順にソートし、重複排除して5色選択
