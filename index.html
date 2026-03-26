@@ -1265,6 +1265,7 @@
                 document.getElementById('dropper-icon').innerHTML = '<path d="M13.354.646a1.207 1.207 0 0 0-1.708 0L8.5 3.793l-.646-.647a.5.5 0 1 0-.708.708L8.293 5l-7.146 7.146A.5.5 0 0 0 1 12.5v1.793l-.854.853a.5.5 0 1 0 .708.707L1.707 15H3.5a.5.5 0 0 0 .354-.146L11 7.707l1.146 1.147a.5.5 0 0 0 .708-.708l-.647-.646 3.147-3.146a1.207 1.207 0 0 0 0-1.708l-2-2z"/>';
                 document.getElementById('dropper-label').textContent = '色を選ぶ';
                 cropPreview.style.display = 'none';
+                captureCurrentRendered();
             }
         });
 
@@ -1459,6 +1460,16 @@
         const savedImages = [];
         let currentThumbIndex = -1;
 
+        function captureCurrentRendered() {
+            if (currentThumbIndex < 0 || currentThumbIndex >= savedImages.length) return Promise.resolve();
+            savedImages[currentThumbIndex].paletteHTML = paletteTarget.innerHTML;
+            const cw = document.getElementById('canvas-wrapper');
+            const idx = currentThumbIndex;
+            return html2canvas(cw, { scale: 2, useCORS: true }).then(canvas => {
+                if (savedImages[idx]) savedImages[idx].rendered = canvas.toDataURL('image/png');
+            });
+        }
+
         function updateTray() {
             const tray     = document.getElementById('saved-tray');
             const countEl  = document.getElementById('saved-count');
@@ -1474,9 +1485,10 @@
                 img.className   = 'saved-thumb';
                 img.src         = item.rendered;
                 img.style.cursor = 'pointer';
-                img.addEventListener('click', () => {
+                img.addEventListener('click', async () => {
                     document.querySelectorAll('.saved-thumb-wrapper').forEach(w => w.classList.remove('active'));
                     wrapper.classList.add('active');
+                    await captureCurrentRendered();
                     currentThumbIndex = i;
                     mainPhoto.src = item.original;
                     mainPhoto.onload = () => {
