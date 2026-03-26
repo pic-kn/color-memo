@@ -1399,7 +1399,7 @@
             offscreen.getContext('2d').drawImage(mainPhoto, sx, sy, cropW, cropH, 0, 0, cropW, cropH);
 
             const thief = new ColorThief();
-            const rawColors = thief.getPalette(offscreen, 15);
+            const rawColors = thief.getPalette(offscreen, 25);
             const dominant = thief.getColor(offscreen);
             const mainHue = rgbToHsl(dominant[0], dominant[1], dominant[2]).h;
             const hueDist = (h1, h2) => { const d = Math.abs(h1 - h2); return Math.min(d, 1 - d); };
@@ -1432,6 +1432,8 @@
             let picked = pickN(candidates, 25);
             if (picked.length < 5) picked = pickN(candidates, 15);
             if (picked.length < 5) picked = pickN(candidates, 8);
+            if (picked.length < 5) picked = pickN(candidates, 5);
+            if (picked.length < 5) picked = pickN(candidates, 3);
             const finalColors = picked;
 
             const textColor = 'rgba(80,80,80,0.6)';
