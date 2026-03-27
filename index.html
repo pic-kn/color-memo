@@ -1577,6 +1577,7 @@
 
         /* ── 保存 ── */
         document.getElementById('save-btn').addEventListener('click', () => {
+            cropPreview.style.display = 'none';
             const cw           = document.getElementById('canvas-wrapper');
             const csw          = document.getElementById('canvas-scale-wrapper');
             const isTransformed = !!cw.style.transform;
