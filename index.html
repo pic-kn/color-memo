@@ -1470,6 +1470,7 @@
         function captureCurrentRendered() {
             if (currentThumbIndex < 0 || currentThumbIndex >= savedImages.length) return Promise.resolve();
             savedImages[currentThumbIndex].paletteHTML = paletteTarget.innerHTML;
+            cropPreview.style.display = 'none';
             const cw = document.getElementById('canvas-wrapper');
             const idx = currentThumbIndex;
             return html2canvas(cw, { scale: 2, useCORS: true }).then(canvas => {
